@@ -22,7 +22,7 @@ public class worldGen : MonoBehaviour
         directions[5].Set(0, 1, -1);
 
         dubTileW = Mathf.Sqrt(3);
-        generatePlane(360, 280);
+        generatePlane(10, 10);
         //SpawnOnCors(0, 0, 0);
         //generateCircle(10);
     }
