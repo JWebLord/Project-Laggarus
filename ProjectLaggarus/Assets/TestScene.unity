@@ -274,7 +274,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: New Text
+  m_Text: Click to tile
 --- !u!222 &735091763
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -399,6 +399,7 @@ GameObject:
   - component: {fileID: 1367800226}
   - component: {fileID: 1367800225}
   - component: {fileID: 1367800229}
+  - component: {fileID: 1367800230}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -481,6 +482,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   text: {fileID: 735091762}
+--- !u!114 &1367800230
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1367800224}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42a32fbf2140cf142a3fb433288bb535, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MoveMult: 0.5
+  ScaleMult: 3
+  MinHeight: 4
+  MaxHeight: 15
 --- !u!1 &1385443711
 GameObject:
   m_ObjectHideFlags: 0

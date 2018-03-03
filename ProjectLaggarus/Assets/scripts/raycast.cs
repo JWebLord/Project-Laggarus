@@ -20,11 +20,8 @@ public class raycast : MonoBehaviour {
             if (Physics.Raycast(ray, out hit, 100f))
             {
                 text.text = hit.transform.position.ToString();
-                hit.transform.gameObject.GetComponent<Renderer>().materials[1] = hit.transform.gameObject.GetComponent<Renderer>().materials[0];
+                //hit.transform.gameObject.GetComponent<Renderer>().materials[1] = hit.transform.gameObject.GetComponent<Renderer>().materials[0];
             }
-
-            //else
-             //   text.text = ray.direction.ToString();
         }
 	}
 }
