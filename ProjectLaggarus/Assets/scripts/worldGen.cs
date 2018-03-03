@@ -54,54 +54,56 @@ public class worldGen : MonoBehaviour
 
     void generatePlane(int x, int y)
     {
-
         currCors.Set(0, 0, 0);
         for (int ix = 0; ix < x; ix++)
         {
             for (int iy = 0; iy < y; iy++)
             {
-                SpawnOnCors((int)currCors.x, (int)currCors.y, (int)currCors.z);
+                SpawnOnCors(
+                    (int)currCors.x, 
+                    (int)currCors.y, 
+                    (int)currCors.z);
+
                 if (iy != y - 1)
-                {
                     if (ix % 2 == 0)
-                    {
                         if (iy % 2 == 0)
-                        {
-                            currCors.Set(currCors.x + directions[2].x, currCors.y + directions[2].y, currCors.z + directions[2].z);
-                        }
+                            currCors.Set(
+                                currCors.x + directions[2].x, 
+                                currCors.y + directions[2].y,
+                                currCors.z + directions[2].z);
                         else
-                        {
-                            currCors.Set(currCors.x + directions[3].x, currCors.y + directions[3].y, currCors.z + directions[3].z);
-                        }
-                    }
+                            currCors.Set(
+                                currCors.x + directions[3].x, 
+                                currCors.y + directions[3].y, 
+                                currCors.z + directions[3].z);
                     else
-                    {
                         if (y % 2 == 0)
-                        {
                             if (iy % 2 == 0)
-                            {
-                                currCors.Set(currCors.x + directions[5].x, currCors.y + directions[5].y, currCors.z + directions[5].z);
-                            }
+                                currCors.Set(
+                                    currCors.x + directions[5].x, 
+                                    currCors.y + directions[5].y, 
+                                    currCors.z + directions[5].z);
                             else
-                            {
-                                currCors.Set(currCors.x + directions[0].x, currCors.y + directions[0].y, currCors.z + directions[0].z);
-                            }
-                        }
+                                currCors.Set(
+                                    currCors.x + directions[0].x, 
+                                    currCors.y + directions[0].y, 
+                                    currCors.z + directions[0].z);
                         else
-                        {
                             if (iy % 2 == 0)
-                            {
-                                currCors.Set(currCors.x + directions[0].x, currCors.y + directions[0].y, currCors.z + directions[0].z);
-                            }
+                                currCors.Set(
+                                    currCors.x + directions[0].x, 
+                                    currCors.y + directions[0].y, 
+                                    currCors.z + directions[0].z);
                             else
-                            {
-                                currCors.Set(currCors.x + directions[5].x, currCors.y + directions[5].y, currCors.z + directions[5].z);
-                            }
-                        }
-                    }
-                }
+                                currCors.Set(
+                                    currCors.x + directions[5].x, 
+                                    currCors.y + directions[5].y, 
+                                    currCors.z + directions[5].z);
             }
-            currCors.Set(currCors.x + directions[1].x, currCors.y + directions[1].y, currCors.z + directions[1].z);
+            currCors.Set(
+                currCors.x + directions[1].x, 
+                currCors.y + directions[1].y, 
+                currCors.z + directions[1].z);
         }
     }
 

@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2017
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectLaggarus", "ProjectLaggarus.csproj", "{36A326C0-D046-B9A9-BC16-E7721BF73245}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectLaggarus.Plugins", "ProjectLaggarus.Plugins.csproj", "{AB10D1BF-E7A8-5932-F7FC-BEE1872983C4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectLaggarus.Editor.Plugins", "ProjectLaggarus.Editor.Plugins.csproj", "{D7A2796C-D9C8-A795-4358-B7E2AB0C9BCF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{36A326C0-D046-B9A9-BC16-E7721BF73245}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{36A326C0-D046-B9A9-BC16-E7721BF73245}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{36A326C0-D046-B9A9-BC16-E7721BF73245}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{36A326C0-D046-B9A9-BC16-E7721BF73245}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB10D1BF-E7A8-5932-F7FC-BEE1872983C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB10D1BF-E7A8-5932-F7FC-BEE1872983C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB10D1BF-E7A8-5932-F7FC-BEE1872983C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB10D1BF-E7A8-5932-F7FC-BEE1872983C4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7A2796C-D9C8-A795-4358-B7E2AB0C9BCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7A2796C-D9C8-A795-4358-B7E2AB0C9BCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7A2796C-D9C8-A795-4358-B7E2AB0C9BCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7A2796C-D9C8-A795-4358-B7E2AB0C9BCF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
