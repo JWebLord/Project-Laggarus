@@ -19,7 +19,7 @@ public class raycast : MonoBehaviour {
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit, 100f))
             {
-                text.text = hit.transform.position.ToString();
+                text.text = hit.transform.position.ToString() + worldGen.LocalToCube(hit.transform.position).ToString();
                 //hit.transform.gameObject.GetComponent<Renderer>().materials[1] = hit.transform.gameObject.GetComponent<Renderer>().materials[0];
             }
         }

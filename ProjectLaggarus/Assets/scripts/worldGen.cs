@@ -4,10 +4,7 @@ using UnityEngine;
 
 public class worldGen : MonoBehaviour
 {
-    public GameObject tile;
-    private float dubTileW;
-    private Vector3 currCors;
-
+    public GameObject tile;//тайл
     private Vector3[] directions;
 
     // Use this for initialization
@@ -21,48 +18,56 @@ public class worldGen : MonoBehaviour
         directions[4].Set(-1, 1, 0);
         directions[5].Set(0, 1, -1);
 
-        dubTileW = Mathf.Sqrt(3);
         generatePlane(10, 10);
         //SpawnOnCors(0, 0, 0);
         //generateCircle(10);
     }
 
-    void SpawnOnCors(int x, int y, int z)
+    public static Vector2 CubeToRemoval(Vector3 cube) //кубические координаты в координаты смещения
     {
-        float xU = dubTileW / 2 * x - dubTileW / 2 * y;
-        float zU = -1.5f * z;
-
-        Instantiate(tile, new Vector3(xU, 0, zU), transform.rotation);
+        float x = cube.x + (cube.z - (cube.z % 2)) / 2;
+        float y = cube.z;
+        return new Vector2(x, y);
     }
 
-    void generateCircle(int circle)
+    public static Vector3 RemovalToCube(Vector2 removal) //координаты смещения в кубические координаты
     {
-        for (int radius = 0; radius < circle; radius++)
-        {
-            currCors.Set(-1 * (radius + 1), 0, 1 * (radius + 1));
-            for (int dir = 0; dir < 6; dir++)
-            {
-                int lineL = radius + 1;
-                for (int i = 0; i < lineL; i++)
-                {
-                    currCors += directions[dir];
-                    SpawnOnCors((int)currCors.x, (int)currCors.y, (int)currCors.z);
-                }
-            }
-        }
+        int x = (int)(removal.x - (removal.y - (removal.y % 2)) / 2);
+        int z = (int)removal.y;
+        int y = -x - z;
+        return new Vector3(x, y, z);
     }
 
-    void generatePlane(int x, int y)
+    public static Vector3 CubeToLocal(Vector3 cube) //кубические координаты в локальные координаты
     {
+        float x = Mathf.Sqrt(3) / 2 * cube.x - Mathf.Sqrt(3) / 2 * cube.y;
+        float z = -1.5f * cube.z;
+        return new Vector3(x, 0, z);
+    }
+
+    public static Vector3 LocalToCube(Vector3 local) //локальные координаты в кубические координаты
+    {
+        float x = local.x / Mathf.Sqrt(3) + local.z / 2 / 1.5f;
+        float z = local.z / -1.5f;
+        float y = local.x / Mathf.Sqrt(3) - local.z / 2 / 1.5f;
+
+        return new Vector3((int)x, (int)y, (int)z);
+    }
+
+    void spawnOnCors(Vector3 localCors) //спавн тайла на локальных координатах
+    {
+        Instantiate(tile, localCors, transform.rotation);
+    }
+
+    void generatePlane(int x, int y) //генерация плоскости x на y
+    {
+        Vector3 currCors = new Vector3();
         currCors.Set(0, 0, 0);
         for (int ix = 0; ix < x; ix++)
         {
             for (int iy = 0; iy < y; iy++)
             {
-                SpawnOnCors(
-                    (int)currCors.x, 
-                    (int)currCors.y, 
-                    (int)currCors.z);
+                spawnOnCors(CubeToLocal(new Vector3(currCors.x, currCors.y, currCors.z)));
 
                 if (iy != y - 1)
                     if (ix % 2 == 0)
