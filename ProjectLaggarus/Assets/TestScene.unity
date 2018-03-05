@@ -373,7 +373,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e454894df7eee9e46853d1d9a6716bd5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  tile: {fileID: 1792997313867254, guid: 66ae7b2db3633a64cac35c0ef2d608b1, type: 2}
+  tile: {fileID: 1847320179515506, guid: cb71e5f132f7e23449258d486d6cf093, type: 2}
 --- !u!4 &1326125338
 Transform:
   m_ObjectHideFlags: 0
@@ -481,6 +481,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45067c578602b784d9e7079ed7513086, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  GexMaterial:
+  - {fileID: 2100000, guid: 4468e4d578b6b554a86e658707e14f8d, type: 2}
+  - {fileID: 2100000, guid: 666fc898aaf6b8842a3dfc1a52cdecf6, type: 2}
   text: {fileID: 735091762}
 --- !u!114 &1367800230
 MonoBehaviour:

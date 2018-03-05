@@ -5,8 +5,11 @@ using UnityEngine.UI;
 
 public class raycast : MonoBehaviour {
 
-    Material groundMaterial;
+    public Material[] GexMaterial;
+
     public Text text;
+
+    private GameObject lastObj;
 	// Use this for initialization
 	void Start () {
 	}
@@ -19,8 +22,17 @@ public class raycast : MonoBehaviour {
             RaycastHit hit;
             if (Physics.Raycast(ray, out hit, 100f))
             {
-                text.text = hit.transform.position.ToString() + worldGen.LocalToCube(hit.transform.position).ToString();
-                //hit.transform.gameObject.GetComponent<Renderer>().materials[1] = hit.transform.gameObject.GetComponent<Renderer>().materials[0];
+                if(lastObj != hit.transform.gameObject)
+                {
+                    if(lastObj != null)
+                    {
+                        lastObj.GetComponent<Renderer>().material = GexMaterial[0];
+                    }
+                    lastObj = hit.transform.gameObject;
+                    text.text = hit.transform.position.ToString() + worldGen.LocalToCube(hit.transform.position).ToString();
+                    hit.transform.gameObject.GetComponent<Renderer>().material = GexMaterial[1];
+                }
+                    
             }
         }
 	}
