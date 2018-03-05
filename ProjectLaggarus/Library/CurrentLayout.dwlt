@@ -70,7 +70,7 @@ MonoBehaviour:
   m_MinSize: {x: 204, y: 442}
   m_MaxSize: {x: 4004, y: 8042}
   vertical: 1
-  controlID: 12
+  controlID: 131
 --- !u!114 &4
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -94,7 +94,7 @@ MonoBehaviour:
   m_MinSize: {x: 683, y: 713}
   m_MaxSize: {x: 14004, y: 18063}
   vertical: 0
-  controlID: 9
+  controlID: 128
 --- !u!114 &5
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -258,7 +258,7 @@ MonoBehaviour:
   m_MinSize: {x: 406, y: 713}
   m_MaxSize: {x: 10002, y: 18063}
   vertical: 1
-  controlID: 10
+  controlID: 129
 --- !u!114 &12
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -282,7 +282,7 @@ MonoBehaviour:
   m_MinSize: {x: 406, y: 442}
   m_MaxSize: {x: 8006, y: 8042}
   vertical: 0
-  controlID: 11
+  controlID: 130
 --- !u!114 &13
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -375,19 +375,19 @@ MonoBehaviour:
     m_ShowAllHits: 0
     m_SearchArea: 0
     m_Folders:
-    - Assets/scripts
+    - Assets/prephabs
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/scripts
+  - Assets/prephabs
   m_LastFoldersGridSize: -1
   m_LastProjectPath: F:\UnityProjects\Project-Laggarus\ProjectLaggarus
   m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: a2310000
-    m_LastClickedID: 12706
-    m_ExpandedIDs: 000000006428000000ca9a3bffffff7f
+    m_SelectedIDs: dc280000
+    m_LastClickedID: 10460
+    m_ExpandedIDs: 0000000064280000d228000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -443,7 +443,7 @@ MonoBehaviour:
     m_SelectedInstanceIDs: 
     m_LastClickedInstanceID: 0
     m_HadKeyboardFocusLastEvent: 1
-    m_ExpandedInstanceIDs: c6230000b66700002a690000ac3500009c610000
+    m_ExpandedInstanceIDs: c6230000b66700002a690000ac3500009c6100007e360000b03600001c370000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -533,8 +533,8 @@ MonoBehaviour:
   m_PersistentViewDataDictionary: {fileID: 0}
   m_TreeViewState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: 3cdcfeff
-    m_LastClickedID: -74692
+    m_SelectedIDs: 56350000
+    m_LastClickedID: 13654
     m_ExpandedIDs: 9efbffff00000000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -586,14 +586,14 @@ MonoBehaviour:
     height: 258
   m_PersistentViewDataDictionary: {fileID: 0}
   m_SceneLighting: 1
-  lastFramingTime: 3939.949486796553
+  lastFramingTime: 8817.263303180858
   m_2DMode: 0
   m_isRotationLocked: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 4.5874405, y: -1.6523438, z: -1.046875}
+    m_Target: {x: 1.7280197, y: 0.22851562, z: -2.4384766}
     speed: 2
-    m_Value: {x: 4.5874405, y: -1.6523438, z: -1.046875}
+    m_Value: {x: 1.7280197, y: 0.22851562, z: -2.4384766}
   m_RenderMode: 0
   m_ValidateTrueMetals: 0
   m_SceneViewState:
@@ -617,13 +617,13 @@ MonoBehaviour:
       speed: 2
       m_Value: 0
   m_Rotation:
-    m_Target: {x: -0.5174752, y: -0.000000013230424, z: 0.00000003010694, w: -0.8556983}
+    m_Target: {x: -0.39894006, y: -0.012382702, z: 0.0053792624, w: -0.9168837}
     speed: 2
-    m_Value: {x: -0.5174752, y: -0.000000013230424, z: 0.00000003010694, w: -0.8556983}
+    m_Value: {x: -0.39893782, y: -0.012382633, z: 0.005379232, w: -0.9168786}
   m_Size:
-    m_Target: 10.399831
+    m_Target: 8.32233
     speed: 2
-    m_Value: 10.399831
+    m_Value: 8.32233
   m_Ortho:
     m_Target: 1
     speed: 2

@@ -1,6 +1,6 @@
 fileFormatVersion: 2
-guid: d1114db3d30b97b46b0a473836323ab8
-timeCreated: 1520104479
+guid: d7f9600c72e15f742b95aa3924e27f96
+timeCreated: 1520261519
 licenseType: Free
 ModelImporter:
   serializedVersion: 22
@@ -12,9 +12,17 @@ ModelImporter:
     2300000: //RootNode
     3300000: //RootNode
     4300000: Circle
-    7400000: Default Take
-    9500000: //RootNode
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Grass
+    second: {fileID: 2100000, guid: 252cf896f9646cb4da094c0e16979594, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Ground
+    second: {fileID: 2100000, guid: 7e4cd5eeff4821447a783a6eef9f6f62, type: 2}
   materials:
     importMaterials: 1
     materialName: 0
@@ -63,7 +71,7 @@ ModelImporter:
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
     secondaryUVPackMargin: 4
-    useFileScale: 1
+    useFileScale: 0
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
@@ -88,7 +96,7 @@ ModelImporter:
     hasExtraRoot: 0
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
-  animationType: 2
+  animationType: 0
   humanoidOversampling: 1
   additionalBone: 0
   userData: 
