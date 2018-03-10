@@ -18,7 +18,7 @@ public class worldGen : MonoBehaviour
         directions[4].Set(-1, 1, 0);
         directions[5].Set(0, 1, -1);
 
-        generatePlane(10, 10);
+        //generatePlane(10, 10);
         //SpawnOnCors(0, 0, 0);
         //generateCircle(10);
     }

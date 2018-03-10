@@ -50,7 +50,7 @@ public class cameraControl : MonoBehaviour {
         float c = (currCamPos.y - MinHeight) / (MaxHeight - MinHeight);
         c = 1f - c;
 
-        transform.rotation = Quaternion.Euler((1f - (c * c)) * 40f + 50f, 0f, 0f);
+        transform.rotation = Quaternion.Euler((1f - (c * c)) * 30f + 40f, 0f, 0f);
 
         transform.position = currCamPos;
     }
