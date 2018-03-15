@@ -12,7 +12,7 @@ public static class HexMetrics
 
     public const float elevationStep = 5f;
 
-    public const int terracesPerSlope = 3;//кол-во уступов
+    public const int terracesPerSlope = 2;//кол-во уступов
     public const int terraceSteps = terracesPerSlope * 2 + 1;//кол-во "соединений" для отрисовки
     public const float horizontalTerraceStepSize = 1f / terraceSteps;
     public const float verticalTerraceStepSize = 1f / (terracesPerSlope + 1);//для расчета по y надо прибавлять + 1, чтобы получалось нормальное деление

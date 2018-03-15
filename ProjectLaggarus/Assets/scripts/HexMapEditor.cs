@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class HexMapEditor : MonoBehaviour
 {
@@ -8,6 +9,7 @@ public class HexMapEditor : MonoBehaviour
     public HexGrid hexGrid;
 
     private Color activeColor;
+
     private int activeElevation;
 
     void Awake()
@@ -17,7 +19,10 @@ public class HexMapEditor : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButton(0))
+        if (
+            Input.GetMouseButton(0) &&
+            !EventSystem.current.IsPointerOverGameObject()
+        )
         {
             HandleInput();
         }
