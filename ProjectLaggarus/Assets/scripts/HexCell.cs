@@ -6,7 +6,9 @@ public class HexCell : MonoBehaviour {
 
     public HexCoordinates coordinates;
     public RectTransform uiRect;
-    public Color color;
+    private Color color;
+    public HexGridChunk chunk;
+    private int elevation = int.MinValue;
     public int Elevation
     {
         get
@@ -15,21 +17,70 @@ public class HexCell : MonoBehaviour {
         }
         set
         {
+            if (elevation == value)
+            {
+                return;
+            }
+
             elevation = value;
             Vector3 position = transform.localPosition;
             position.y = value * HexMetrics.elevationStep;
+            position.y +=
+                (HexMetrics.SampleNoise(position).y * 2f - 1f) *
+                HexMetrics.elevationPerturbStrength;//добавление разности ячеек в высотах
             transform.localPosition = position;
 
             Vector3 uiPosition = uiRect.localPosition;
-            uiPosition.z = elevation * -HexMetrics.elevationStep;
+            uiPosition.z = -position.y;
             uiRect.localPosition = uiPosition;
+
+            Refresh();
         }
     }
 
-    private int elevation;
+    public Vector3 Position
+    {
+        get
+        {
+            return transform.localPosition;
+        }
+    }
+
+    public Color Color
+    {
+        get
+        {
+            return color;
+        }
+        set
+        {
+            if (color == value)
+            {
+                return;
+            }
+            color = value;
+            Refresh();
+        }
+    }
 
     [SerializeField]
     HexCell[] neighbors;
+
+    void Refresh()//переотрисовка чанка
+    {
+        if (chunk)
+        {
+            chunk.Refresh();
+            for (int i = 0; i < neighbors.Length; i++)//отрисовка чанков соседних с изменяемой ячейкой
+            {
+                HexCell neighbor = neighbors[i];
+                if (neighbor != null && neighbor.chunk != chunk)
+                {
+                    neighbor.chunk.Refresh();
+                }
+            }
+        }
+    }
 
     public HexCell GetNeighbor(HexDirection direction)
     {

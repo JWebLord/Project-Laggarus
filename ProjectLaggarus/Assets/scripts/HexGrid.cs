@@ -5,49 +5,72 @@ using UnityEngine.UI;
 
 public class HexGrid : MonoBehaviour {
 
-    public int width = 6;
-    public int height = 6;
+    public int chunkCountX = 4, chunkCountZ = 3;//размер грида в чанках
+
+    private int cellCountX, cellCountZ;
 
     public Color defaultColor = Color.white;//цвета
 
-    public HexCell cellPrefab; //префаб ячейки
-    HexCell[] cells; //Массив ячеек
+    public HexGridChunk chunkPrefab;//префаб под скрипт чанка
+    HexGridChunk[] chunks;//массив чанков
+
+    public HexCell cellPrefab; //префаб под скрипт ячейки
+    HexCell[] cells; //Массив ячеек (под весь грид)
 
     public Text cellLabelPrefab; //префаб текста
-    Canvas gridCanvas; //канвас для вывода координат
-    HexMesh hexMesh; //generic mesh
+    //Canvas gridCanvas; //канвас для вывода координат
+    //HexMesh hexMesh; //generic mesh (скрипт)
+
+    public Texture2D noiseSource;//шум для деформации тайлов
 
     void Awake()
     {
-        gridCanvas = GetComponentInChildren<Canvas>();//канвас под текст
-        hexMesh = GetComponentInChildren<HexMesh>();//меш для тайлов
+        HexMetrics.noiseSource = noiseSource;
 
-        cells = new HexCell[height * width];//массив h*w под карту
+        cellCountX = chunkCountX * HexMetrics.chunkSizeX;
+        cellCountZ = chunkCountZ * HexMetrics.chunkSizeZ;
 
-        for (int z = 0, i = 0; z < height; z++) //генерация карты
+        CreateChunks();
+        CreateCells();
+    }
+
+    void CreateChunks()
+    {
+        chunks = new HexGridChunk[chunkCountX * chunkCountZ];
+
+        for (int z = 0, i = 0; z < chunkCountZ; z++)
         {
-            for (int x = 0; x < width; x++)
+            for (int x = 0; x < chunkCountX; x++)
+            {
+                HexGridChunk chunk = chunks[i++] = Instantiate(chunkPrefab);
+                chunk.transform.SetParent(transform);
+            }
+        }
+    }
+
+    private void CreateCells()
+    {
+        cells = new HexCell[cellCountZ * cellCountX];//глобальный массив под весь грид
+
+        for (int z = 0, i = 0; z < cellCountZ; z++)
+        {
+            for (int x = 0; x < cellCountX; x++)
             {
                 CreateCell(x, z, i++);
             }
         }
     }
 
-    void Start()
+    private void OnEnable()
     {
-        hexMesh.Triangulate(cells);
-    }
-
-    public void Refresh()//перерисовка меша
-    {
-        hexMesh.Triangulate(cells);
+        HexMetrics.noiseSource = noiseSource;
     }
 
     public HexCell GetCell(Vector3 position)
     {
         position = transform.InverseTransformPoint(position);
         HexCoordinates coordinates = HexCoordinates.FromPosition(position);
-        int index = coordinates.X + coordinates.Z * width + coordinates.Z / 2;//последнее прибавляем т.к x каждые 2 уровня -1
+        int index = coordinates.X + coordinates.Z * cellCountX + coordinates.Z / 2;//последнее прибавляем т.к x каждые 2 уровня -1
         return cells[index];
     }
 
@@ -59,10 +82,9 @@ public class HexGrid : MonoBehaviour {
         position.z = z * (HexMetrics.outerRadius * 1.5f);
 
         HexCell cell = cells[i] = Instantiate<HexCell>(cellPrefab);//спавним префаб гексагона
-        cell.transform.SetParent(transform, false);//отвязывание от родителей
         cell.transform.localPosition = position;
         cell.coordinates = HexCoordinates.FromOffsetCoordinates(x, z);//перевод координат из смещения в кубические (в локальной переменной)
-        cell.color = defaultColor;//установка цвета
+        cell.Color = defaultColor;//установка цвета
 
         if (x > 0)
         {
@@ -72,31 +94,66 @@ public class HexGrid : MonoBehaviour {
         {
             if ((z % 2) == 0)
             {
-                cell.SetNeighbor(HexDirection.SE, cells[i - width]);
+                cell.SetNeighbor(HexDirection.SE, cells[i - cellCountX]);
                 if (x > 0)
                 {
-                    cell.SetNeighbor(HexDirection.SW, cells[i - width - 1]);
+                    cell.SetNeighbor(HexDirection.SW, cells[i - cellCountX - 1]);
                 }
             }
             else
             {
-                cell.SetNeighbor(HexDirection.SW, cells[i - width]);
-                if (x < width - 1)
+                cell.SetNeighbor(HexDirection.SW, cells[i - cellCountX]);
+                if (x < cellCountX - 1)
                 {
-                    cell.SetNeighbor(HexDirection.SE, cells[i - width + 1]);
+                    cell.SetNeighbor(HexDirection.SE, cells[i - cellCountX + 1]);
                 }
             }
         }
 
         Text label = Instantiate<Text>(cellLabelPrefab);//спавн текста из префаба
-        label.rectTransform.SetParent(gridCanvas.transform, false);
         label.rectTransform.anchoredPosition =
             new Vector2(position.x, position.z);
         label.text = cell.coordinates.ToStringOnSeparateLines();//текст=координаты
         cell.uiRect = label.rectTransform;
+
+        cell.Elevation = 0;
+
+        AddCellToChunk(x, z, cell);
     }
 
+    void AddCellToChunk(int x, int z, HexCell cell)
+    {
+        int chunkX = x / HexMetrics.chunkSizeX;//делением нацело находим координаты нужного чанка
+        int chunkZ = z / HexMetrics.chunkSizeZ;
+        HexGridChunk chunk = chunks[chunkX + chunkZ * chunkCountX];
 
+        int localX = x - chunkX * HexMetrics.chunkSizeX;//нахождение локальных координат внутри конкретного чанка
+        int localZ = z - chunkZ * HexMetrics.chunkSizeZ;
+        chunk.AddCell(localX + localZ * HexMetrics.chunkSizeX, cell);
+    }
+
+    public HexCell GetCell(HexCoordinates coordinates)
+    {
+        int z = coordinates.Z;
+        if (z < 0 || z >= cellCountZ)
+        {
+            return null;
+        }
+        int x = coordinates.X + z / 2;
+        if (x < 0 || x >= cellCountX)
+        {
+            return null;
+        }
+        return cells[x + z * cellCountX];
+    }
+
+    public void ShowUI(bool visible)
+    {
+        for (int i = 0; i < chunks.Length; i++)
+        {
+            chunks[i].ShowUI(visible);
+        }
+    }
 }
 
 [System.Serializable]

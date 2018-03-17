@@ -7,15 +7,20 @@ public static class HexMetrics
     public const float outerRadius = 10f;//внешний радиус
     public const float innerRadius = outerRadius * 0.866025404f;//внутренний радиус sqrt(3)/2
 
-    public const float solidFactor = 0.75f;
+    public const float solidFactor = 0.8f;
     public const float blendFactor = 1f - solidFactor;
 
-    public const float elevationStep = 5f;
+    public const float elevationStep = 3f;
 
     public const int terracesPerSlope = 2;//кол-во уступов
     public const int terraceSteps = terracesPerSlope * 2 + 1;//кол-во "соединений" для отрисовки
     public const float horizontalTerraceStepSize = 1f / terraceSteps;
     public const float verticalTerraceStepSize = 1f / (terracesPerSlope + 1);//для расчета по y надо прибавлять + 1, чтобы получалось нормальное деление
+    public const float cellPerturbStrength = 4f;//сила изменений тайлов
+    public const float noiseScale = 0.003f;//множитель размерности текстуры для выборки шума
+    public const float elevationPerturbStrength = 1.5f;//множитель разности ячеек в высоте
+
+    public const int chunkSizeX = 5, chunkSizeZ = 5; //размер чанка
 
     static Vector3[] corners = {
         new Vector3(0f, 0f, outerRadius),                    //верхний
@@ -75,5 +80,12 @@ public static class HexMetrics
         int deltaElevation = elevation2 - elevation1;
         if((deltaElevation == 1) || (deltaElevation == -1)) { return HexEdgeType.Slope; }
         return HexEdgeType.Cliff;
+    }
+
+    public static Texture2D noiseSource;
+
+    public static Vector4 SampleNoise(Vector3 position)
+    {
+        return noiseSource.GetPixelBilinear(position.x * noiseScale, position.y * noiseScale);
     }
 }
