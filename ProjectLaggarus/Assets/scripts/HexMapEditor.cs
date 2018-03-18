@@ -3,19 +3,30 @@ using UnityEngine.EventSystems;
 
 public class HexMapEditor : MonoBehaviour
 {
+    //enum под редактирование рек
+    enum OptionalToggle
+    {
+        Ignore, Yes, No
+    }
 
-    public Color[] colors;
+    OptionalToggle riverMode;
 
-    public HexGrid hexGrid;
+    public Color[] colors;//цвета редактора
 
-    private Color activeColor;
+    public HexGrid hexGrid;//глобальный грид
 
-    bool applyColor;
-    bool applyElevation = true;
+    private Color activeColor;//активный цвет
 
-    private int activeElevation;
+    bool applyColor;//редактировать ли цвет
+    bool applyElevation = true;//редактировать ли высоту
 
-    int brushSize;
+    private int activeElevation;//активная высота
+
+    int brushSize;//размер кисти(радиус в клетках)
+
+    bool isDrag;//детекция перетаскивания
+    HexDirection dragDirection;//направление перетаскивания
+    HexCell previousCell;//последняя ячека при перетаскивании
 
     void Awake()
     {
@@ -31,6 +42,11 @@ public class HexMapEditor : MonoBehaviour
         {
             HandleInput();
         }
+        else
+        {
+            previousCell = null;//если не тащим, то обнуляем ячейку
+        }
+
     }
 
     void HandleInput()
@@ -39,7 +55,21 @@ public class HexMapEditor : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(inputRay, out hit))
         {
-            EditCells(hexGrid.GetCell(hit.point));
+            HexCell currentCell = hexGrid.GetCell(hit.point);
+            if (previousCell && previousCell != currentCell)//условие для проверки(чтобы не сработало на null или ту же самую ячейка)
+            {
+                ValidateDrag(currentCell);
+            }
+            else
+            {
+                isDrag = false;
+            }
+            EditCells(currentCell);
+            previousCell = currentCell;
+        }
+        else
+        {
+            previousCell = null;
         }
     }
 
@@ -60,6 +90,11 @@ public class HexMapEditor : MonoBehaviour
     public void SetElevation(float elevation)
     {
         activeElevation = (int)elevation;
+    }
+
+    public void SetRiverMode(int mode)
+    {
+        riverMode = (OptionalToggle)mode;
     }
 
     void EditCells(HexCell center)
@@ -95,6 +130,18 @@ public class HexMapEditor : MonoBehaviour
             {
                 cell.Elevation = activeElevation;
             }
+            if (riverMode == OptionalToggle.No)
+            {
+                cell.RemoveRiver();
+            }
+            else if (isDrag && riverMode == OptionalToggle.Yes)
+            {
+                HexCell otherCell = cell.GetNeighbor(dragDirection.Opposite());
+                if (otherCell)
+                {
+                    otherCell.SetOutgoingRiver(dragDirection);
+                }
+            }
         }
     }
 
@@ -106,5 +153,22 @@ public class HexMapEditor : MonoBehaviour
     public void SetBrushSize(float size)
     {
         brushSize = (int)size;
+    }
+
+    void ValidateDrag(HexCell currentCell)//простая проверка на соседа
+    {
+        for (
+            dragDirection = HexDirection.NE;
+            dragDirection <= HexDirection.NW;
+            dragDirection++
+        )
+        {
+            if (previousCell.GetNeighbor(dragDirection) == currentCell)
+            {
+                isDrag = true;
+                return;
+            }
+        }
+        isDrag = false;
     }
 }
