@@ -13,6 +13,9 @@ public class HexCell : MonoBehaviour {
     bool hasIncomingRiver, hasOutgoingRiver;//входят/выходят ли малые реки
     HexDirection incomingRiver, outgoingRiver;//направление рек
 
+    [SerializeField]
+    bool[] roads;
+
     public int Elevation//публичные методы для задания и считывания высоты ячейки
     {
         get
@@ -39,33 +42,58 @@ public class HexCell : MonoBehaviour {
             uiRect.localPosition = uiPosition;
 
             //проверки на то, чтобы реки текли правильно(по высотам)
-            if (
-                hasOutgoingRiver &&
-                elevation < GetNeighbor(outgoingRiver).elevation
-            )
+            ValidateRivers();
+            //Проверка на корректную отрисовку дорог
+            for (int i = 0; i < roads.Length; i++)
             {
-                RemoveOutgoingRiver();
-            }
-            if (
-                hasIncomingRiver &&
-                elevation > GetNeighbor(incomingRiver).elevation
-            )
-            {
-                RemoveIncomingRiver();
+                if (roads[i] && GetElevationDifference((HexDirection)i) > 1)
+                {
+                    SetRoad(i, false);
+                }
             }
 
             Refresh();
         }
     }
-
-    public Vector3 Position//позиция readOnly
+    /// <summary>
+    /// Наличие дороги в заданном направлении
+    /// </summary>
+    /// <param name="direction"></param>
+    /// <returns></returns>
+    public bool HasRoadThroughEdge(HexDirection direction)
+    {
+        return roads[(int)direction];
+    }
+    /// <summary>
+    /// Наличие дорог в клетке
+    /// </summary>
+    public bool HasRoads
+    {
+        get
+        {
+            for (int i = 0; i < roads.Length; i++)
+            {
+                if (roads[i])
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+    /// <summary>
+    /// Получить позицию клетки
+    /// </summary>
+    public Vector3 Position
     {
         get
         {
             return transform.localPosition;
         }
     }
-
+    /// <summary>
+    /// Получить/установить метод
+    /// </summary>
     public Color Color//метод задания и считывания цвета ячейки
     {
         get
@@ -83,7 +111,87 @@ public class HexCell : MonoBehaviour {
         }
     }
 
+    public int WaterLevel
+    {
+        get
+        {
+            return waterLevel;
+        }
+        set
+        {
+            if (waterLevel == value)
+            {
+                return;
+            }
+            waterLevel = value;
+            ValidateRivers();
+            Refresh();
+        }
+    }
+    [SerializeField]
+    int waterLevel;
 
+    public bool IsUnderwater
+    {
+        get
+        {
+            return waterLevel > elevation;
+        }
+    }
+
+    /// <summary>
+    /// Добавить дорогу в клетку в заданном направлении(РЕКОМЕНДУЕТСЯ)
+    /// </summary>
+    /// <param name="direction"></param>
+    public void AddRoad(HexDirection direction)
+    {
+        if (
+            !roads[(int)direction] && !HasRiverThroughEdge(direction) &&
+            GetElevationDifference(direction) <= 1
+        )
+        {
+            SetRoad((int)direction, true);
+        }
+    }
+    /// <summary>
+    /// Установить состояние дороги(есть/нет) в двух соседних клетках
+    /// </summary>
+    /// <param name="index"></param>
+    /// <param name="state"></param>
+    void SetRoad(int index, bool state)
+    {
+        roads[index] = state;
+        neighbors[index].roads[(int)((HexDirection)index).Opposite()] = state;
+        neighbors[index].RefreshSelfOnly();
+        RefreshSelfOnly();
+    }
+
+    /// <summary>
+    /// Удалить дороги в клетке и в соседней клетке в направлении этой клетки
+    /// </summary>
+    public void RemoveRoads()
+    {
+        for (int i = 0; i < neighbors.Length; i++)
+        {
+            if (roads[i])
+            {
+                roads[i] = false;
+                neighbors[i].roads[(int)((HexDirection)i).Opposite()] = false;
+                neighbors[i].RefreshSelfOnly();
+                RefreshSelfOnly();
+            }
+        }
+    }
+    /// <summary>
+    /// Получить разницу высот между клеткои и соседом в определенном направлении
+    /// </summary>
+    /// <param name="direction"></param>
+    /// <returns></returns>
+    public int GetElevationDifference(HexDirection direction)
+    {
+        int difference = elevation - GetNeighbor(direction).elevation;
+        return difference >= 0 ? difference : -difference;
+    }
 
     //тут ReadOnly методы для рек
     /// <summary>
@@ -97,6 +205,21 @@ public class HexCell : MonoBehaviour {
                 (elevation + HexMetrics.streamBedElevationOffset) *
                 HexMetrics.elevationStep;
         }
+    }
+
+    public HexDirection RiverBeginOrEndDirection
+    {
+        get
+        {
+            return hasIncomingRiver ? incomingRiver : outgoingRiver;
+        }
+    }
+
+    bool IsValidRiverDestination(HexCell neighbor)
+    {
+        return neighbor && (
+            elevation >= neighbor.elevation || waterLevel == neighbor.elevation
+        );
     }
     /// <summary>
     /// Наличие в тайле втекающей в нее реки
@@ -177,10 +300,21 @@ public class HexCell : MonoBehaviour {
         get
         {
             return
-                (elevation + HexMetrics.riverSurfaceElevationOffset) *
+                (elevation + HexMetrics.waterElevationOffset) *
                 HexMetrics.elevationStep;
         }
     }
+
+    public float WaterSurfaceY
+    {
+        get
+        {
+            return
+                (waterLevel + HexMetrics.waterElevationOffset) *
+                HexMetrics.elevationStep;
+        }
+    }
+
     /// <summary>
     /// Удаление выходящей из клетки реки
     /// </summary>
@@ -232,7 +366,7 @@ public class HexCell : MonoBehaviour {
             return;
         }
         HexCell neighbor = GetNeighbor(direction);//если есть соседа нет, или тайл ниже соседа -> выход
-        if (!neighbor || elevation < neighbor.elevation)
+        if (!IsValidRiverDestination(neighbor))
         {
             return;
         }
@@ -243,12 +377,30 @@ public class HexCell : MonoBehaviour {
         }
         hasOutgoingRiver = true;
         outgoingRiver = direction;//ну и наконец ставим речку
-        RefreshSelfOnly();
 
         neighbor.RemoveIncomingRiver();//соседу назначаем текущую к нему реку
         neighbor.hasIncomingRiver = true;
         neighbor.incomingRiver = direction.Opposite();
-        neighbor.RefreshSelfOnly();
+
+        SetRoad((int)direction, false);
+    }
+
+    void ValidateRivers()
+    {
+        if (
+            hasOutgoingRiver &&
+            !IsValidRiverDestination(GetNeighbor(outgoingRiver))
+        )
+        {
+            RemoveOutgoingRiver();
+        }
+        if (
+            hasIncomingRiver &&
+            !GetNeighbor(incomingRiver).IsValidRiverDestination(this)
+        )
+        {
+            RemoveIncomingRiver();
+        }
     }
 
     [SerializeField]

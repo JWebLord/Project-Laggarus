@@ -23,8 +23,13 @@ public static class HexMetrics
     public const float noiseScale = 0.003f;//множитель размерности текстуры для выборки шума
     public const float elevationPerturbStrength = 1.5f;//множитель разности ячеек в высоте
 
-    public const float streamBedElevationOffset = -1.75f;//глубина канала под малые реки
-    public const float riverSurfaceElevationOffset = -0.5f;//возвышение реки над поверхностью
+    public const float streamBedElevationOffset = -1.75f;//глубина канала под малые рекиriver
+    public const float waterElevationOffset = -0.5f;//возвышение воды над поверхностью
+
+    public const float waterFactor = 0.6f; // размер клетки воды(соединения растянутся)
+    public const float waterBlendFactor = 1f - waterFactor;
+
+
 
     public const int chunkSizeX = 5, chunkSizeZ = 5; //размер чанка
 
@@ -58,10 +63,26 @@ public static class HexMetrics
         return corners[(int)direction + 1] * solidFactor;
     }
 
+    public static Vector3 GetFirstWaterCorner(HexDirection direction)
+    {
+        return corners[(int)direction] * waterFactor;
+    }
+
+    public static Vector3 GetSecondWaterCorner(HexDirection direction)
+    {
+        return corners[(int)direction + 1] * waterFactor;
+    }
+
     public static Vector3 GetBridge(HexDirection direction)
     {
         return (corners[(int)direction] + corners[(int)direction + 1]) *
             blendFactor;
+    }
+
+    public static Vector3 GetWaterBridge(HexDirection direction)
+    {
+        return (corners[(int)direction] + corners[(int)direction + 1]) *
+            waterBlendFactor;
     }
 
     public static Vector3 TerraceLerp(Vector3 a, Vector3 b, int step)//интерполяция склонов

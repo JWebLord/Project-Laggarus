@@ -9,16 +9,19 @@ public class HexMapEditor : MonoBehaviour
         Ignore, Yes, No
     }
 
-    OptionalToggle riverMode;
+    OptionalToggle riverMode, roadMode;
 
     public Color[] colors;//цвета редактора
 
     public HexGrid hexGrid;//глобальный грид
 
     private Color activeColor;//активный цвет
+    int activeWaterLevel;//Активный уровень воды
 
     bool applyColor;//редактировать ли цвет
     bool applyElevation = true;//редактировать ли высоту
+    bool applyWaterLevel = true;//редактировать ли уровень высоты
+
 
     private int activeElevation;//активная высота
 
@@ -55,6 +58,7 @@ public class HexMapEditor : MonoBehaviour
         RaycastHit hit;
         if (Physics.Raycast(inputRay, out hit))
         {
+            //Debug.Log(hit.point.x + " " + hit.point.y + " " + hit.point.z);
             HexCell currentCell = hexGrid.GetCell(hit.point);
             if (previousCell && previousCell != currentCell)//условие для проверки(чтобы не сработало на null или ту же самую ячейка)
             {
@@ -87,6 +91,16 @@ public class HexMapEditor : MonoBehaviour
         applyElevation = toggle;
     }
 
+    public void SetApplyWaterLevel(bool toggle)
+    {
+        applyWaterLevel = toggle;
+    }
+
+    public void SetWaterLevel(float level)
+    {
+        activeWaterLevel = (int)level;
+    }
+
     public void SetElevation(float elevation)
     {
         activeElevation = (int)elevation;
@@ -95,6 +109,11 @@ public class HexMapEditor : MonoBehaviour
     public void SetRiverMode(int mode)
     {
         riverMode = (OptionalToggle)mode;
+    }
+
+    public void SetRoadMode(int mode)
+    {
+        roadMode = (OptionalToggle)mode;
     }
 
     void EditCells(HexCell center)
@@ -130,16 +149,31 @@ public class HexMapEditor : MonoBehaviour
             {
                 cell.Elevation = activeElevation;
             }
+            if (applyWaterLevel)
+            {
+                cell.WaterLevel = activeWaterLevel;
+            }
             if (riverMode == OptionalToggle.No)
             {
                 cell.RemoveRiver();
             }
-            else if (isDrag && riverMode == OptionalToggle.Yes)
+            if (roadMode == OptionalToggle.No)
+            {
+                cell.RemoveRoads();
+            }
+            if (isDrag)
             {
                 HexCell otherCell = cell.GetNeighbor(dragDirection.Opposite());
                 if (otherCell)
                 {
-                    otherCell.SetOutgoingRiver(dragDirection);
+                    if (riverMode == OptionalToggle.Yes)
+                    {
+                        otherCell.SetOutgoingRiver(dragDirection);
+                    }
+                    if (roadMode == OptionalToggle.Yes)
+                    {
+                        otherCell.AddRoad(dragDirection);
+                    }
                 }
             }
         }
