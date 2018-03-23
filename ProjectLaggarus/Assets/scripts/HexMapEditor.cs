@@ -21,9 +21,12 @@ public class HexMapEditor : MonoBehaviour
     bool applyColor;//редактировать ли цвет
     bool applyElevation = true;//редактировать ли высоту
     bool applyWaterLevel = true;//редактировать ли уровень высоты
+    bool applyUrbanLevel, applyFarmLevel, applyPlantLevel;//редактировать ли застройку, фермы и леса
+
 
 
     private int activeElevation;//активная высота
+    private int activeUrbanLevel, activeFarmLevel, activePlantLevel;//активный уровень застройки, ферм и лесов
 
     int brushSize;//размер кисти(радиус в клетках)
 
@@ -76,6 +79,38 @@ public class HexMapEditor : MonoBehaviour
             previousCell = null;
         }
     }
+
+    public void SetApplyUrbanLevel(bool toggle)
+    {
+        applyUrbanLevel = toggle;
+    }
+
+    public void SetUrbanLevel(float level)
+    {
+        activeUrbanLevel = (int)level;
+    }
+
+    public void SetApplyFarmLevel(bool toggle)
+    {
+        applyFarmLevel = toggle;
+    }
+
+    public void SetFarmLevel(float level)
+    {
+        activeFarmLevel = (int)level;
+    }
+
+    public void SetApplyPlantLevel(bool toggle)
+    {
+        applyPlantLevel = toggle;
+    }
+
+    public void SetPlantLevel(float level)
+    {
+        activePlantLevel = (int)level;
+    }
+
+
 
     public void SelectColor(int index)
     {
@@ -152,6 +187,18 @@ public class HexMapEditor : MonoBehaviour
             if (applyWaterLevel)
             {
                 cell.WaterLevel = activeWaterLevel;
+            }
+            if (applyUrbanLevel)
+            {
+                cell.UrbanLevel = activeUrbanLevel;
+            }
+            if (applyFarmLevel)
+            {
+                cell.FarmLevel = activeFarmLevel;
+            }
+            if (applyPlantLevel)
+            {
+                cell.PlantLevel = activePlantLevel;
             }
             if (riverMode == OptionalToggle.No)
             {

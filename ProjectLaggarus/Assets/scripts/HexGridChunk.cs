@@ -7,6 +7,9 @@ public class HexGridChunk : MonoBehaviour {
     HexCell[] cells;
 
     public HexMesh Terrain, rivers, roads, water, waterShore, estuaries;
+
+    public HexFeatureManager features;
+
     Canvas gridCanvas;
 
     void Awake()
@@ -42,6 +45,7 @@ public class HexGridChunk : MonoBehaviour {
         water.Clear();
         waterShore.Clear();
         estuaries.Clear();
+        features.Clear();
         for (int i = 0; i < cells.Length; i++)
         {
             Triangulate(cells[i]);
@@ -52,6 +56,7 @@ public class HexGridChunk : MonoBehaviour {
         water.Apply();
         waterShore.Apply();
         estuaries.Apply();
+        features.Apply();
     }
 
     public void AddCell(int index, HexCell cell)
@@ -69,9 +74,15 @@ public class HexGridChunk : MonoBehaviour {
 
     void Triangulate(HexCell cell)//триангуляция клетки
     {
+        //триангуляция клетки
         for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
         {
             Triangulate(d, cell);
+        }
+        //спавн объектов игрового окружения
+        if (!cell.IsUnderwater && !cell.HasRiver && !cell.HasRoads)
+        {
+            features.AddFeature(cell, cell.Position);
         }
     }
 
@@ -106,6 +117,11 @@ public class HexGridChunk : MonoBehaviour {
         else
         {
             TriangulateWithoutRiver(direction, cell, center, e);
+            //спавн объектов игрового окружения в каждом из 6 треугольников если нет рек и дорог конечно
+            if (!cell.IsUnderwater && !cell.HasRoadThroughEdge(direction))
+            {
+                features.AddFeature(cell, (center + e.v1 + e.v5) * (1f / 3f));
+            }
         }
 
         if (direction <= HexDirection.SE)//если нужно, то триангулируем соединение клеток
@@ -447,6 +463,12 @@ public class HexGridChunk : MonoBehaviour {
 
         TriangulateEdgeStrip(m, cell.Color, e, cell.Color);
         TriangulateEdgeFan(center, m, cell.Color);
+
+        //спавн объектов игрового окружения в каждом из 6 треугольников если нет рек и дорог
+        if (!cell.IsUnderwater && !cell.HasRoadThroughEdge(direction))
+        {
+            features.AddFeature(cell, (center + e.v1 + e.v5) * (1f / 3f));
+        }
     }
 
     

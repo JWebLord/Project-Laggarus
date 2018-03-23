@@ -23,15 +23,20 @@ public static class HexMetrics
     public const float noiseScale = 0.003f;//множитель размерности текстуры для выборки шума
     public const float elevationPerturbStrength = 1.5f;//множитель разности ячеек в высоте
 
-    public const float streamBedElevationOffset = -1.75f;//глубина канала под малые рекиriver
+    public const float streamBedElevationOffset = -1.75f;//глубина канала под малые реки
     public const float waterElevationOffset = -0.5f;//возвышение воды над поверхностью
 
     public const float waterFactor = 0.6f; // размер клетки воды(соединения растянутся)
     public const float waterBlendFactor = 1f - waterFactor;
 
-
-
     public const int chunkSizeX = 5, chunkSizeZ = 5; //размер чанка
+
+    public const int hashGridSize = 256;//размер хэш-сетки
+    public const float hashGridScale = 0.25f;//множитель для хэш-сетки
+
+    static HexHash[] hashGrid;//массив хэш-сетки
+
+    public static Texture2D noiseSource;
 
     static Vector3[] corners = {
         new Vector3(0f, 0f, outerRadius),                    //верхний
@@ -115,19 +120,72 @@ public static class HexMetrics
             (corners[(int)direction] + corners[(int)direction + 1]) *
             (0.5f * solidFactor);
     }
-
-    public static Texture2D noiseSource;
-
+    /// <summary>
+    /// Шум для конкретных координат
+    /// </summary>
+    /// <param name="position"></param>
+    /// <returns></returns>
     public static Vector4 SampleNoise(Vector3 position)
     {
         return noiseSource.GetPixelBilinear(position.x * noiseScale, position.y * noiseScale);
     }
-
+    /// <summary>
+    /// Изменить вектор с помощью шума
+    /// </summary>
+    /// <param name="position"></param>
+    /// <returns></returns>
     public static Vector3 Perturb(Vector3 position)//изменение вершины шумом
     {
         Vector4 sample = SampleNoise(position);
         position.x += (sample.x * 2f - 1f) * cellPerturbStrength;
         position.z += (sample.z * 2f - 1f) * cellPerturbStrength;
         return position;
+    }
+
+    /// <summary>
+    /// Инициализация хэш-сетки
+    /// </summary>
+    public static void InitializeHashGrid(int seed)
+    {
+        hashGrid = new HexHash[hashGridSize * hashGridSize];
+        Random.State currentState = Random.state;
+        Random.InitState(seed);
+        for (int i = 0; i < hashGrid.Length; i++)
+        {
+            hashGrid[i] = HexHash.Create();
+        }
+        Random.state = currentState;
+    }
+    /// <summary>
+    /// Взять значение хэш-сетки для конкретной позиции
+    /// </summary>
+    /// <param name="position"></param>
+    /// <returns></returns>
+    public static HexHash SampleHashGrid(Vector3 position)
+    {
+        int x = (int)(position.x * hashGridScale) % hashGridSize;
+        if (x < 0)
+        {
+            x += hashGridSize;
+        }
+        int z = (int)(position.z * hashGridScale) % hashGridSize;
+        if (z < 0)
+        {
+            z += hashGridSize;
+        }
+        return hashGrid[x + z * hashGridSize];
+    }
+    /// <summary>
+    /// Шансы зданий для разных типов застройки
+    /// </summary>
+    static float[][] featureThresholds = {
+        new float[] {0.0f, 0.0f, 0.4f},
+        new float[] {0.0f, 0.4f, 0.6f},
+        new float[] {0.4f, 0.6f, 0.8f}
+    };
+
+    public static float[] GetFeatureThresholds(int level)
+    {
+        return featureThresholds[level];
     }
 }

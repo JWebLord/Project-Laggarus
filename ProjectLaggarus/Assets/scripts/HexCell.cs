@@ -13,6 +13,8 @@ public class HexCell : MonoBehaviour {
     bool hasIncomingRiver, hasOutgoingRiver;//входят/выходят ли малые реки
     HexDirection incomingRiver, outgoingRiver;//направление рек
 
+    int urbanLevel, farmLevel, plantLevel;//уровень застройки, ферм и лесов
+
     [SerializeField]
     bool[] roads;
 
@@ -55,6 +57,55 @@ public class HexCell : MonoBehaviour {
             Refresh();
         }
     }
+
+    public int UrbanLevel
+    {
+        get
+        {
+            return urbanLevel;
+        }
+        set
+        {
+            if (urbanLevel != value)
+            {
+                urbanLevel = value;
+                RefreshSelfOnly();
+            }
+        }
+    }
+
+    public int FarmLevel
+    {
+        get
+        {
+            return farmLevel;
+        }
+        set
+        {
+            if (farmLevel != value)
+            {
+                farmLevel = value;
+                RefreshSelfOnly();
+            }
+        }
+    }
+
+    public int PlantLevel
+    {
+        get
+        {
+            return plantLevel;
+        }
+        set
+        {
+            if (plantLevel != value)
+            {
+                plantLevel = value;
+                RefreshSelfOnly();
+            }
+        }
+    }
+
     /// <summary>
     /// Наличие дороги в заданном направлении
     /// </summary>
@@ -304,7 +355,9 @@ public class HexCell : MonoBehaviour {
                 HexMetrics.elevationStep;
         }
     }
-
+    /// <summary>
+    /// Уровень поверхности воды
+    /// </summary>
     public float WaterSurfaceY
     {
         get
@@ -314,6 +367,7 @@ public class HexCell : MonoBehaviour {
                 HexMetrics.elevationStep;
         }
     }
+    
 
     /// <summary>
     /// Удаление выходящей из клетки реки
