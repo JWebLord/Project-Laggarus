@@ -127,7 +127,7 @@ GameObject:
   - component: {fileID: 33574001429907908}
   - component: {fileID: 23878692803152818}
   m_Layer: 0
-  m_Name: Roads
+  m_Name: Walls
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -146,6 +146,24 @@ GameObject:
   - component: {fileID: 23453112947229002}
   m_Layer: 0
   m_Name: Terrain
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!1 &1796754043459816
+GameObject:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  serializedVersion: 5
+  m_Component:
+  - component: {fileID: 4506546118775842}
+  - component: {fileID: 114903915035597414}
+  - component: {fileID: 33723214557026776}
+  - component: {fileID: 23636558537737848}
+  m_Layer: 0
+  m_Name: Roads
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -192,7 +210,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 4415187645700222}
-  m_RootOrder: 3
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4204072337252076
 Transform:
@@ -220,13 +238,27 @@ Transform:
   - {fileID: 224149612764547188}
   - {fileID: 4574090467820172}
   - {fileID: 4985364548811770}
-  - {fileID: 4178015755331910}
+  - {fileID: 4506546118775842}
   - {fileID: 4761323751191154}
   - {fileID: 4108677620918598}
   - {fileID: 4204072337252076}
   - {fileID: 4631621132991426}
+  - {fileID: 4178015755331910}
   m_Father: {fileID: 0}
   m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &4506546118775842
+Transform:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1796754043459816}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 4415187645700222}
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!4 &4574090467820172
 Transform:
@@ -416,6 +448,40 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+--- !u!23 &23636558537737848
+MeshRenderer:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1796754043459816}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 1
+  m_DynamicOccludee: 1
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_Materials:
+  - {fileID: 2100000, guid: e018cd5a6d693694e801d3288210ad5a, type: 2}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 0
+  m_SelectedEditorRenderState: 3
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: 0
+  m_SortingLayer: 0
+  m_SortingOrder: 0
 --- !u!23 &23653611213112938
 MeshRenderer:
   m_ObjectHideFlags: 1
@@ -457,14 +523,14 @@ MeshRenderer:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1600368349571878}
   m_Enabled: 1
-  m_CastShadows: 0
+  m_CastShadows: 2
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: e018cd5a6d693694e801d3288210ad5a, type: 2}
+  - {fileID: 2100000, guid: e5f54699c94de0b4eac1adc01ca8e07d, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -519,6 +585,13 @@ MeshFilter:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1600368349571878}
   m_Mesh: {fileID: 0}
+--- !u!33 &33723214557026776
+MeshFilter:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1796754043459816}
+  m_Mesh: {fileID: 0}
 --- !u!33 &33845292115459472
 MeshFilter:
   m_ObjectHideFlags: 1
@@ -539,7 +612,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   useCollider: 0
   useColors: 0
-  useUVCoordinates: 1
+  useUVCoordinates: 0
   useUV2Coordinates: 0
 --- !u!114 &114464551326229492
 MonoBehaviour:
@@ -628,11 +701,18 @@ MonoBehaviour:
     - {fileID: 4881682578435390, guid: 2ce026bab66291045bc4c55f05b17a58, type: 2}
     - {fileID: 4881682578435390, guid: 1d67dbcebae9e0745a2fece8dafa6764, type: 2}
   - prefabs:
-    - {fileID: 4881682578435390, guid: 521c15072788c5c4293931a054fcbb15, type: 2}
-    - {fileID: 4881682578435390, guid: fe1f2a081335b964f9fef8ab6a8f1dbd, type: 2}
+    - {fileID: 4617521684823044, guid: 6d80e7683a5b07d4a898964104cd0f3b, type: 2}
+    - {fileID: 4617521684823044, guid: 6d80e7683a5b07d4a898964104cd0f3b, type: 2}
   - prefabs:
     - {fileID: 4881682578435390, guid: 032ee9163cf4fb241be61520b18ba18c, type: 2}
     - {fileID: 4881682578435390, guid: 1a352fb7ef59b2e4b8bc3003fd53c1ab, type: 2}
+  walls: {fileID: 114381662710356544}
+  wallTower: {fileID: 4826634977948124, guid: ce0a02308796a9940872a02615d13f6f, type: 2}
+  bridge: {fileID: 4413484493184820, guid: e86b5a164a11549498956ec699418450, type: 2}
+  special:
+  - {fileID: 4878641775163356, guid: 858aa6641d7aa8d41a3ae217432f207f, type: 2}
+  - {fileID: 4937630251421864, guid: 6533bf2673fd45649a14eeddb671425b, type: 2}
+  - {fileID: 4695398936567622, guid: bb627ecbc320864408215397036f0f97, type: 2}
 --- !u!114 &114661733925155584
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -663,6 +743,21 @@ MonoBehaviour:
   useColors: 1
   useUVCoordinates: 0
   useUV2Coordinates: 0
+--- !u!114 &114903915035597414
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1796754043459816}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ea66cf214dfd1574b8caf40730d12813, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  useCollider: 0
+  useColors: 0
+  useUVCoordinates: 1
+  useUV2Coordinates: 0
 --- !u!114 &114910310449814584
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -676,7 +771,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Terrain: {fileID: 114703496061703412}
   rivers: {fileID: 114539771401983912}
-  roads: {fileID: 114381662710356544}
+  roads: {fileID: 114903915035597414}
   water: {fileID: 114464551326229492}
   waterShore: {fileID: 114983485110169424}
   estuaries: {fileID: 114661733925155584}

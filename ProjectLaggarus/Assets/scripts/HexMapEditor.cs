@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
+using System.IO;
 
 public class HexMapEditor : MonoBehaviour
 {
@@ -9,24 +10,20 @@ public class HexMapEditor : MonoBehaviour
         Ignore, Yes, No
     }
 
-    OptionalToggle riverMode, roadMode;
-
-    public Color[] colors;//цвета редактора
+    OptionalToggle riverMode, roadMode, walledMode;
 
     public HexGrid hexGrid;//глобальный грид
 
-    private Color activeColor;//активный цвет
     int activeWaterLevel;//Активный уровень воды
 
-    bool applyColor;//редактировать ли цвет
     bool applyElevation = true;//редактировать ли высоту
     bool applyWaterLevel = true;//редактировать ли уровень высоты
-    bool applyUrbanLevel, applyFarmLevel, applyPlantLevel;//редактировать ли застройку, фермы и леса
+    bool applyUrbanLevel, applyFarmLevel, applyPlantLevel, applySpecialIndex;//редактировать ли застройку, фермы, мегаструктуры и леса
 
-
+    int activeTerrainTypeIndex;//индекс типа поверхности клетки
 
     private int activeElevation;//активная высота
-    private int activeUrbanLevel, activeFarmLevel, activePlantLevel;//активный уровень застройки, ферм и лесов
+    private int activeUrbanLevel, activeFarmLevel, activePlantLevel, activeSpecialIndex;//активный уровень застройки, ферм, мегаструктур и лесов
 
     int brushSize;//размер кисти(радиус в клетках)
 
@@ -34,10 +31,6 @@ public class HexMapEditor : MonoBehaviour
     HexDirection dragDirection;//направление перетаскивания
     HexCell previousCell;//последняя ячека при перетаскивании
 
-    void Awake()
-    {
-        SelectColor(0);
-    }
 
     void Update()
     {
@@ -80,6 +73,16 @@ public class HexMapEditor : MonoBehaviour
         }
     }
 
+    public void SetApplySpecialIndex(bool toggle)
+    {
+        applySpecialIndex = toggle;
+    }
+
+    public void SetSpecialIndex(float index)
+    {
+        activeSpecialIndex = (int)index;
+    }
+
     public void SetApplyUrbanLevel(bool toggle)
     {
         applyUrbanLevel = toggle;
@@ -108,17 +111,6 @@ public class HexMapEditor : MonoBehaviour
     public void SetPlantLevel(float level)
     {
         activePlantLevel = (int)level;
-    }
-
-
-
-    public void SelectColor(int index)
-    {
-        applyColor = index >= 0;
-        if (applyColor)
-        {
-            activeColor = colors[index];
-        }
     }
 
     public void SetApplyElevation(bool toggle)
@@ -151,6 +143,16 @@ public class HexMapEditor : MonoBehaviour
         roadMode = (OptionalToggle)mode;
     }
 
+    public void SetWalledMode(int mode)
+    {
+        walledMode = (OptionalToggle)mode;
+    }
+
+    public void SetTerrainTypeIndex(int index)
+    {
+        activeTerrainTypeIndex = index;
+    }
+
     void EditCells(HexCell center)
     {
         int centerX = center.coordinates.X;
@@ -176,9 +178,9 @@ public class HexMapEditor : MonoBehaviour
     {
         if (cell)
         {
-            if (applyColor)
+            if (activeTerrainTypeIndex >= 0)
             {
-                cell.Color = activeColor;
+                cell.TerrainTypeIndex = activeTerrainTypeIndex;
             }
             if (applyElevation)
             {
@@ -200,6 +202,10 @@ public class HexMapEditor : MonoBehaviour
             {
                 cell.PlantLevel = activePlantLevel;
             }
+            if (applySpecialIndex)
+            {
+                cell.SpecialIndex = activeSpecialIndex;
+            }
             if (riverMode == OptionalToggle.No)
             {
                 cell.RemoveRiver();
@@ -207,6 +213,10 @@ public class HexMapEditor : MonoBehaviour
             if (roadMode == OptionalToggle.No)
             {
                 cell.RemoveRoads();
+            }
+            if (walledMode != OptionalToggle.Ignore)
+            {
+                cell.Walled = walledMode == OptionalToggle.Yes;
             }
             if (isDrag)
             {
@@ -252,4 +262,6 @@ public class HexMapEditor : MonoBehaviour
         }
         isDrag = false;
     }
+
+    
 }

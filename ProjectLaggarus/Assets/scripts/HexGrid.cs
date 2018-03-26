@@ -1,15 +1,14 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+using System.IO;
 
 public class HexGrid : MonoBehaviour {
 
-    public int chunkCountX = 4, chunkCountZ = 3;//размер грида в чанках
+    public int cellCountX = 20, cellCountZ = 15;//размер грида в клетках
 
-    private int cellCountX, cellCountZ;
+    int chunkCountX, chunkCountZ;
 
-    public Color defaultColor = Color.white;//цвета
+    public Color[] colors;//цвета
 
     public HexGridChunk chunkPrefab;//префаб под скрипт чанка
     HexGridChunk[] chunks;//массив чанков
@@ -29,13 +28,39 @@ public class HexGrid : MonoBehaviour {
     {
         HexMetrics.noiseSource = noiseSource;
         HexMetrics.InitializeHashGrid(seed);
+        HexMetrics.colors = colors;
+        CreateMap(cellCountX, cellCountZ);
+    }
 
+    public bool CreateMap(int x, int z)
+    {
+        //размер карты должен быть кратен размерам чанка
+        if (
+            x <= 0 || x % HexMetrics.chunkSizeX != 0 ||
+            z <= 0 || z % HexMetrics.chunkSizeZ != 0
+        )
+        {
+            Debug.LogError("Unsupported map size.");
+            return false;
+        }
 
-        cellCountX = chunkCountX * HexMetrics.chunkSizeX;
-        cellCountZ = chunkCountZ * HexMetrics.chunkSizeZ;
+        if (chunks != null)
+        {
+            for (int i = 0; i < chunks.Length; i++)
+            {
+                Destroy(chunks[i].gameObject);
+            }
+        }
+        cellCountX = x;
+        cellCountZ = z;
+
+        chunkCountX = cellCountX / HexMetrics.chunkSizeX;
+        chunkCountZ = cellCountZ / HexMetrics.chunkSizeZ;
 
         CreateChunks();
         CreateCells();
+
+        return true;
     }
 
     void CreateChunks()
@@ -71,6 +96,7 @@ public class HexGrid : MonoBehaviour {
         {
             HexMetrics.noiseSource = noiseSource;
             HexMetrics.InitializeHashGrid(seed);
+            HexMetrics.colors = colors;
         }
     }
 
@@ -92,7 +118,6 @@ public class HexGrid : MonoBehaviour {
         HexCell cell = cells[i] = Instantiate<HexCell>(cellPrefab);//спавним префаб гексагона
         cell.transform.localPosition = position;
         cell.coordinates = HexCoordinates.FromOffsetCoordinates(x, z);//перевод координат из смещения в кубические (в локальной переменной)
-        cell.Color = defaultColor;//установка цвета
 
         if (x > 0)
         {
@@ -160,6 +185,52 @@ public class HexGrid : MonoBehaviour {
         for (int i = 0; i < chunks.Length; i++)
         {
             chunks[i].ShowUI(visible);
+        }
+    }
+
+    /// <summary>
+    /// Сохранение грида
+    /// </summary>
+    /// <param name="writer"></param>
+    public void Save(BinaryWriter writer)
+    {
+        writer.Write(cellCountX);
+        writer.Write(cellCountZ);
+
+        for (int i = 0; i < cells.Length; i++)
+        {
+            cells[i].Save(writer);
+        }
+    }
+
+    /// <summary>
+    /// Загрузка грида
+    /// </summary>
+    /// <param name="reader"></param>
+    public void Load(BinaryReader reader, int header)
+    {
+        int x = 20, z = 15;
+        if (header >= 1)
+        {
+            x = reader.ReadInt32();
+            z = reader.ReadInt32();
+        }
+
+        if (x != cellCountX || z != cellCountZ)
+        {
+            if (!CreateMap(x, z))
+            {
+                return;
+            }
+        }
+
+        for (int i = 0; i < cells.Length; i++)
+        {
+            cells[i].Load(reader);
+        }
+        for (int i = 0; i < chunks.Length; i++)
+        {
+            chunks[i].Refresh();
         }
     }
 }
@@ -244,7 +315,7 @@ public struct HexCoordinates
             {
                 iZ = -iX - iY;
             }
-            Debug.LogWarning("rounding error!");
+            //Debug.LogWarning("rounding error!"); //показывает, если произошло округление координат
         }
 
         return new HexCoordinates(iX, iZ);

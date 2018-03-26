@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public static class HexMetrics
 {
@@ -35,6 +33,19 @@ public static class HexMetrics
     public const float hashGridScale = 0.25f;//множитель для хэш-сетки
 
     static HexHash[] hashGrid;//массив хэш-сетки
+
+    public const float wallHeight = 4f;//высота стен(сгенерированных
+    public const float wallThickness = 0.75f;//толщина стен
+    public const float wallElevationOffset = verticalTerraceStepSize;//вертикальное смещение стен в землю(на склонах)
+    public const float wallTowerThreshold = 0.5f;//Частота спавна башен
+    public const float wallYOffset = -1f;//Смещение башен по высоте
+
+    public const float bridgeDesignLength = 7f;//длина мостов(модели) и т.д.
+    public const float bridgeDesignHeight = 1f;
+    public const float bridgeDesignWidth = 3f;
+
+    public static Color[] colors;//набор цветов
+
 
     public static Texture2D noiseSource;
 
@@ -187,5 +198,36 @@ public static class HexMetrics
     public static float[] GetFeatureThresholds(int level)
     {
         return featureThresholds[level];
+    }
+
+    /// <summary>
+    /// Смещение координат для толщины стен
+    /// </summary>
+    /// <param name="near"></param>
+    /// <param name="far"></param>
+    /// <returns></returns>
+    public static Vector3 WallThicknessOffset(Vector3 near, Vector3 far)
+    {
+        Vector3 offset;
+        offset.x = far.x - near.x;
+        offset.y = 0f;
+        offset.z = far.z - near.z;
+        return offset.normalized * (wallThickness * 0.5f);
+    }
+
+    /// <summary>
+    /// Смещение стен по высоте
+    /// </summary>
+    /// <param name="near"></param>
+    /// <param name="far"></param>
+    /// <returns></returns>
+    public static Vector3 WallLerp(Vector3 near, Vector3 far)
+    {
+        near.x += (far.x - near.x) * 0.5f;
+        near.z += (far.z - near.z) * 0.5f;
+        float v =
+            near.y < far.y ? wallElevationOffset : (1f - wallElevationOffset);
+        near.y += (far.y - near.y) * v + wallYOffset;
+        return near;
     }
 }
