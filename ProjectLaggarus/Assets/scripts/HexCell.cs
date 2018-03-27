@@ -1,25 +1,41 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.IO;
 
 public class HexCell : MonoBehaviour {
 
     public HexCoordinates coordinates;//координаты ячейки(кубические)
     public RectTransform uiRect;//координаты для координат:) ячейки
-    int terrainTypeIndex;//индекс типа поверхности клетки
+    int terrainTypeIndex;//индекс типа поверхности ячейки
     public HexGridChunk chunk;//чанк к которому принадлежит ячейка
     private int elevation = int.MinValue;//высота ячейки(изначально -100500, чтобы произошла ее переотрисовка при создании)
 
     bool hasIncomingRiver, hasOutgoingRiver;//входят/выходят ли малые реки
     HexDirection incomingRiver, outgoingRiver;//направление рек
 
-    int urbanLevel, farmLevel, plantLevel;//уровень застройки, ферм и лесов
-
-    bool walled;//есть ли стены
-
-    int specialIndex;//номер мегаструктуры в клетке
-
     [SerializeField]
-    bool[] roads;
+    bool[] roads;//Массив присутствия дорог в направлениях
+    int urbanLevel, farmLevel, plantLevel;//уровень застройки, ферм и лесов
+    bool walled;//есть ли стены
+    int specialIndex;//номер мегаструктуры в ячейке
+
+    int distance;//расстояние от выбраной ячейки до этой
+    public HexCell PathFrom { get; set; } //из какой ячейки проложен путь в эту
+    public int SearchHeuristic { get; set; }//Для приоритета поиска
+    public HexCell NextWithSamePriority { get; set; }//следующая ячейка с тем же приоритетом в поиске
+
+    public int Distance
+    {
+        get
+        {
+            return distance;
+        }
+        set
+        {
+            distance = value;
+            UpdateDistanceLabel();
+        }
+    }
 
     public int SpecialIndex
     {
@@ -188,16 +204,6 @@ public class HexCell : MonoBehaviour {
         get
         {
             return transform.localPosition;
-        }
-    }
-    /// <summary>
-    /// Получить цвет
-    /// </summary>
-    public Color Color//метод задания и считывания цвета ячейки
-    {
-        get
-        {
-            return HexMetrics.colors[terrainTypeIndex];
         }
     }
 
@@ -649,6 +655,43 @@ public class HexCell : MonoBehaviour {
         for (int i = 0; i < roads.Length; i++)
         {
             roads[i] = (roadFlags & (1 << i)) != 0;
+        }
+    }
+
+    void UpdateDistanceLabel()
+    {
+        Text label = uiRect.GetComponent<Text>();
+        label.text = distance == int.MaxValue ? "" : distance.ToString();
+    }
+
+    /// <summary>
+    /// Выкл. подсветку клетки
+    /// </summary>
+    public void DisableHighlight()
+    {
+        Image highlight = uiRect.GetChild(0).GetComponent<Image>();
+        highlight.enabled = false;
+    }
+
+    /// <summary>
+    /// Подсветить клетку
+    /// </summary>
+    /// <param name="color"></param>
+    public void EnableHighlight(Color color)
+    {
+        Image highlight = uiRect.GetChild(0).GetComponent<Image>();
+        highlight.color = color;
+        highlight.enabled = true;
+    }
+
+    /// <summary>
+    /// Вычислить приоритет поиска клетки
+    /// </summary>
+    public int SearchPriority
+    {
+        get
+        {
+            return distance + SearchHeuristic;
         }
     }
 

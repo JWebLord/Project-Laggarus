@@ -44,8 +44,6 @@ public static class HexMetrics
     public const float bridgeDesignHeight = 1f;
     public const float bridgeDesignWidth = 3f;
 
-    public static Color[] colors;//набор цветов
-
 
     public static Texture2D noiseSource;
 

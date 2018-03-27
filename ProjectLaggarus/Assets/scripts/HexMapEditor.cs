@@ -12,9 +12,13 @@ public class HexMapEditor : MonoBehaviour
 
     OptionalToggle riverMode, roadMode, walledMode;
 
+    bool editMode;// вкл/выкл режим редактирования
+
     public HexGrid hexGrid;//глобальный грид
 
     int activeWaterLevel;//Активный уровень воды
+
+    public Material terrainMaterial;//ссылка на материал поверхности
 
     bool applyElevation = true;//редактировать ли высоту
     bool applyWaterLevel = true;//редактировать ли уровень высоты
@@ -29,8 +33,12 @@ public class HexMapEditor : MonoBehaviour
 
     bool isDrag;//детекция перетаскивания
     HexDirection dragDirection;//направление перетаскивания
-    HexCell previousCell;//последняя ячека при перетаскивании
+    HexCell previousCell, searchFromCell, searchToCell;//последняя клетка при перетаскивании, клетка с которой идет поиск пути и до которой идет поиск
 
+    void Awake()
+    {
+        terrainMaterial.DisableKeyword("GRID_ON");
+    }
 
     void Update()
     {
@@ -64,7 +72,28 @@ public class HexMapEditor : MonoBehaviour
             {
                 isDrag = false;
             }
-            EditCells(currentCell);
+            if (editMode)
+            {
+                EditCells(currentCell);
+            }
+            else if (Input.GetKey(KeyCode.LeftShift) && searchToCell != currentCell)
+            {
+                if (searchFromCell)
+                {
+                    searchFromCell.DisableHighlight();
+                }
+                searchFromCell = currentCell;
+                searchFromCell.EnableHighlight(Color.blue);
+                if (searchToCell)
+                {
+                    hexGrid.FindPath(searchFromCell, searchToCell);
+                }
+            }
+            else if (searchFromCell && searchFromCell != currentCell)
+            {
+                searchToCell = currentCell;
+                hexGrid.FindPath(searchFromCell, searchToCell);
+            }
             previousCell = currentCell;
         }
         else
@@ -236,10 +265,6 @@ public class HexMapEditor : MonoBehaviour
         }
     }
 
-    public void ShowUI(bool visible)
-    {
-        hexGrid.ShowUI(visible);
-    }
 
     public void SetBrushSize(float size)
     {
@@ -263,5 +288,25 @@ public class HexMapEditor : MonoBehaviour
         isDrag = false;
     }
 
-    
+    /// <summary>
+    /// Переключение отрисовки сетки в шейдере материала поверхности
+    /// </summary>
+    /// <param name="visible"></param>
+    public void ShowGrid(bool visible)
+    {
+        if (visible)
+        {
+            terrainMaterial.EnableKeyword("GRID_ON");
+        }
+        else
+        {
+            terrainMaterial.DisableKeyword("GRID_ON");
+        }
+    }
+
+    public void SetEditMode(bool toggle)
+    {
+        editMode = toggle;
+        hexGrid.ShowUI(!toggle);
+    }
 }

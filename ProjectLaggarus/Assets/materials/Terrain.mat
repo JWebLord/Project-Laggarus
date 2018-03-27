@@ -6,7 +6,7 @@ Material:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
-  m_Name: HexMaterial
+  m_Name: Terrain
   m_Shader: {fileID: 4800000, guid: 0c2bc26708ccc16489b675274e8a6446, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
@@ -38,8 +38,12 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _GridTex:
+        m_Texture: {fileID: 2800000, guid: c089ca498f8f94d49b6b963f8e953be5, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 0}
+        m_Texture: {fileID: 18700000, guid: 37f2d1d836cb91d4e80829140574a590, type: 2}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:

@@ -1,14 +1,14 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.IO;
+using System.Collections;
+using System.Collections.Generic;
 
 public class HexGrid : MonoBehaviour {
 
     public int cellCountX = 20, cellCountZ = 15;//размер грида в клетках
 
     int chunkCountX, chunkCountZ;
-
-    public Color[] colors;//цвета
 
     public HexGridChunk chunkPrefab;//префаб под скрипт чанка
     HexGridChunk[] chunks;//массив чанков
@@ -24,11 +24,13 @@ public class HexGrid : MonoBehaviour {
 
     public int seed;
 
+    HexCellPriorityQueue searchFrontier;//лист очередей приоритета поиска пути
+
+
     void Awake()
     {
         HexMetrics.noiseSource = noiseSource;
         HexMetrics.InitializeHashGrid(seed);
-        HexMetrics.colors = colors;
         CreateMap(cellCountX, cellCountZ);
     }
 
@@ -96,7 +98,6 @@ public class HexGrid : MonoBehaviour {
         {
             HexMetrics.noiseSource = noiseSource;
             HexMetrics.InitializeHashGrid(seed);
-            HexMetrics.colors = colors;
         }
     }
 
@@ -146,7 +147,6 @@ public class HexGrid : MonoBehaviour {
         Text label = Instantiate<Text>(cellLabelPrefab);//спавн текста из префаба
         label.rectTransform.anchoredPosition =
             new Vector2(position.x, position.z);
-        label.text = cell.coordinates.ToStringOnSeparateLines();//текст=координаты
         cell.uiRect = label.rectTransform;
 
         cell.Elevation = 0;
@@ -209,6 +209,7 @@ public class HexGrid : MonoBehaviour {
     /// <param name="reader"></param>
     public void Load(BinaryReader reader, int header)
     {
+        StopAllCoroutines();//останавка всех сопрограмм перед загрузкой
         int x = 20, z = 15;
         if (header >= 1)
         {
@@ -231,6 +232,117 @@ public class HexGrid : MonoBehaviour {
         for (int i = 0; i < chunks.Length; i++)
         {
             chunks[i].Refresh();
+        }
+    }
+
+    /// <summary>
+    /// Расчитать расстояние до клетки
+    /// </summary>
+    /// <param name="fromCell"></param>
+    /// <param name="toCell"></param>
+    public void FindPath(HexCell fromCell, HexCell toCell)
+    {
+        StopAllCoroutines();
+        StartCoroutine(Search(fromCell, toCell));
+    }
+
+    /// <summary>
+    /// ENumerator для поиска пути
+    /// </summary>
+    /// <param name="fromCell"></param>
+    /// <param name="toCell"></param>
+    /// <returns></returns>
+    IEnumerator Search(HexCell fromCell, HexCell toCell)
+    {
+        if (searchFrontier == null)
+        {
+            searchFrontier = new HexCellPriorityQueue();
+        }
+        else
+        {
+            searchFrontier.Clear();
+        }
+        for (int i = 0; i < cells.Length; i++)
+        {
+            cells[i].Distance = int.MaxValue;
+            cells[i].DisableHighlight();
+        }
+        fromCell.EnableHighlight(Color.blue);
+        toCell.EnableHighlight(Color.red);
+
+        WaitForSeconds delay = new WaitForSeconds(1 / 60f);//задержка между вызовами ЕНумератора
+        fromCell.Distance = 0;
+        searchFrontier.Enqueue(fromCell);
+        while (searchFrontier.Count > 0)
+        {
+            yield return delay;
+            HexCell current = searchFrontier.Dequeue();
+
+            //выход из подпрограммы, если достигнута клетка, путь до которой нужно найти и подсветка пути
+            if (current == toCell)
+            {
+                current = current.PathFrom;
+                while (current != fromCell)
+                {
+                    current.EnableHighlight(Color.white);
+                    current = current.PathFrom;
+
+                }
+                break;
+            }
+
+            // Поиск в ширину
+            for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
+            {
+                HexCell neighbor = current.GetNeighbor(d);
+                if (neighbor == null)
+                {
+                    continue;
+                }
+                //обход воды
+                if (neighbor.IsUnderwater)
+                {
+                    continue;
+                }
+                //обход гор
+                HexEdgeType edgeType = current.GetEdgeType(neighbor);
+                if (current.GetEdgeType(neighbor) == HexEdgeType.Cliff)
+                {
+                    continue;
+                }
+                int distance = current.Distance;
+                //ускорение от дорог
+                if (current.HasRoadThroughEdge(d))
+                {
+                    distance += 1;
+                }
+                //нельзя проходить через стены, но если дорога есть, то пройдем через предыдущее условие
+                else if (current.Walled != neighbor.Walled)
+                {
+                    continue;
+                }
+                else
+                //+5 если равнина +10 если терасса + замедление если на клетке что-то есть
+                {
+                    distance += edgeType == HexEdgeType.Flat ? 5 : 10;
+                    distance += neighbor.UrbanLevel + neighbor.FarmLevel +
+                        neighbor.PlantLevel;
+                }
+                if (neighbor.Distance == int.MaxValue)
+                {
+                    neighbor.Distance = distance;
+                    neighbor.PathFrom = current;
+                    neighbor.SearchHeuristic = neighbor.coordinates.DistanceTo(toCell.coordinates);
+                    searchFrontier.Enqueue(neighbor);
+                }
+                else if (distance < neighbor.Distance)
+                {
+                    int oldPriority = neighbor.SearchPriority;
+                    neighbor.Distance = distance;
+                    neighbor.PathFrom = current;
+                    searchFrontier.Change(neighbor, oldPriority);
+                }
+            }
         }
     }
 }
@@ -319,5 +431,18 @@ public struct HexCoordinates
         }
 
         return new HexCoordinates(iX, iZ);
+    }
+
+    /// <summary>
+    /// Расчитать расстояние до клетки
+    /// </summary>
+    /// <param name="other"></param>
+    /// <returns></returns>
+    public int DistanceTo(HexCoordinates other)
+    {
+        return
+            ((x < other.x ? other.x - x : x - other.x) +
+            (Y < other.Y ? other.Y - Y : Y - other.Y) +
+            (z < other.z ? other.z - z : z - other.z)) / 2;
     }
 }
