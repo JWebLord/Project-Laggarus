@@ -25,6 +25,9 @@ public class HexGrid : MonoBehaviour {
     public int seed;
 
     HexCellPriorityQueue searchFrontier;//лист очередей приоритета поиска пути
+    int searchFrontierPhase;
+    HexCell currentPathFrom, currentPathTo;
+    bool currentPathExists;
 
 
     void Awake()
@@ -46,6 +49,7 @@ public class HexGrid : MonoBehaviour {
             return false;
         }
 
+        ClearPath();
         if (chunks != null)
         {
             for (int i = 0; i < chunks.Length; i++)
@@ -209,7 +213,7 @@ public class HexGrid : MonoBehaviour {
     /// <param name="reader"></param>
     public void Load(BinaryReader reader, int header)
     {
-        StopAllCoroutines();//останавка всех сопрограмм перед загрузкой
+        ClearPath();
         int x = 20, z = 15;
         if (header >= 1)
         {
@@ -240,10 +244,14 @@ public class HexGrid : MonoBehaviour {
     /// </summary>
     /// <param name="fromCell"></param>
     /// <param name="toCell"></param>
-    public void FindPath(HexCell fromCell, HexCell toCell)
+    public void FindPath(HexCell fromCell, HexCell toCell, int speed)
     {
-        StopAllCoroutines();
-        StartCoroutine(Search(fromCell, toCell));
+        ClearPath();
+        currentPathFrom = fromCell;
+        currentPathTo = toCell;
+        //собственно сам поиск
+        currentPathExists = Search(fromCell, toCell, speed);
+        ShowPath(speed);
     }
 
     /// <summary>
@@ -252,8 +260,10 @@ public class HexGrid : MonoBehaviour {
     /// <param name="fromCell"></param>
     /// <param name="toCell"></param>
     /// <returns></returns>
-    IEnumerator Search(HexCell fromCell, HexCell toCell)
+    bool Search(HexCell fromCell, HexCell toCell, int speed)
     {
+        searchFrontierPhase += 2;
+
         if (searchFrontier == null)
         {
             searchFrontier = new HexCellPriorityQueue();
@@ -262,40 +272,30 @@ public class HexGrid : MonoBehaviour {
         {
             searchFrontier.Clear();
         }
-        for (int i = 0; i < cells.Length; i++)
-        {
-            cells[i].Distance = int.MaxValue;
-            cells[i].DisableHighlight();
-        }
-        fromCell.EnableHighlight(Color.blue);
-        toCell.EnableHighlight(Color.red);
 
-        WaitForSeconds delay = new WaitForSeconds(1 / 60f);//задержка между вызовами ЕНумератора
+        fromCell.SearchPhase = searchFrontierPhase;
         fromCell.Distance = 0;
         searchFrontier.Enqueue(fromCell);
         while (searchFrontier.Count > 0)
         {
-            yield return delay;
             HexCell current = searchFrontier.Dequeue();
+            current.SearchPhase += 1;
 
             //выход из подпрограммы, если достигнута клетка, путь до которой нужно найти и подсветка пути
             if (current == toCell)
             {
-                current = current.PathFrom;
-                while (current != fromCell)
-                {
-                    current.EnableHighlight(Color.white);
-                    current = current.PathFrom;
-
-                }
-                break;
+                return true;
             }
+
+            //Сколько ходов требуется для достижения клетки(не той, которая выделена)
+            int currentTurn = current.Distance / speed;
 
             // Поиск в ширину
             for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
             {
                 HexCell neighbor = current.GetNeighbor(d);
-                if (neighbor == null)
+                //если соседа нет или есть еще не достигнутые клетки, то в первую очередь обходим их
+                if (neighbor == null || neighbor.SearchPhase > searchFrontierPhase)
                 {
                     continue;
                 }
@@ -310,11 +310,12 @@ public class HexGrid : MonoBehaviour {
                 {
                     continue;
                 }
-                int distance = current.Distance;
+                //стоимость движения
+                int moveCost;
                 //ускорение от дорог
                 if (current.HasRoadThroughEdge(d))
                 {
-                    distance += 1;
+                    moveCost = 1;
                 }
                 //нельзя проходить через стены, но если дорога есть, то пройдем через предыдущее условие
                 else if (current.Walled != neighbor.Walled)
@@ -324,12 +325,24 @@ public class HexGrid : MonoBehaviour {
                 else
                 //+5 если равнина +10 если терасса + замедление если на клетке что-то есть
                 {
-                    distance += edgeType == HexEdgeType.Flat ? 5 : 10;
-                    distance += neighbor.UrbanLevel + neighbor.FarmLevel +
+                    moveCost = edgeType == HexEdgeType.Flat ? 5 : 10;
+                    moveCost += neighbor.UrbanLevel + neighbor.FarmLevel +
                         neighbor.PlantLevel;
                 }
-                if (neighbor.Distance == int.MaxValue)
+
+                //расстояние до клетки назначения
+                int distance = current.Distance + moveCost;
+                //кол-во ходов до клетки назначения
+                int turn = distance / speed;
+
+                if (turn > currentTurn)
                 {
+                    distance = turn * speed + moveCost;
+                }
+
+                if (neighbor.SearchPhase < searchFrontierPhase)
+                {
+                    neighbor.SearchPhase = searchFrontierPhase;
                     neighbor.Distance = distance;
                     neighbor.PathFrom = current;
                     neighbor.SearchHeuristic = neighbor.coordinates.DistanceTo(toCell.coordinates);
@@ -342,8 +355,51 @@ public class HexGrid : MonoBehaviour {
                     neighbor.PathFrom = current;
                     searchFrontier.Change(neighbor, oldPriority);
                 }
+                
             }
         }
+        return false;
+    }
+
+    /// <summary>
+    /// Показать путь от клетки до клетки в ходах
+    /// </summary>
+    /// <param name="speed"></param>
+    void ShowPath(int speed)
+    {
+        if (currentPathExists)
+        {
+            HexCell current = currentPathTo;
+            while (current != currentPathFrom)
+            {
+                int turn = current.Distance / speed;
+                current.SetLabel(turn.ToString());
+                current.EnableHighlight(Color.white);
+                current = current.PathFrom;
+            }
+        }
+        currentPathFrom.EnableHighlight(Color.blue);
+        currentPathTo.EnableHighlight(Color.red);
+    }
+
+    /// <summary>
+    /// Снять выделение с клеток пути
+    /// </summary>
+    void ClearPath()
+    {
+        if (currentPathExists)
+        {
+            HexCell current = currentPathTo;
+            while (current != currentPathFrom)
+            {
+                current.SetLabel(null);
+                current.DisableHighlight();
+                current = current.PathFrom;
+            }
+            current.DisableHighlight();
+            currentPathExists = false;
+        }
+        currentPathFrom = currentPathTo = null;
     }
 }
 

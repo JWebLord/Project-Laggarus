@@ -23,6 +23,7 @@ public class HexCell : MonoBehaviour {
     public HexCell PathFrom { get; set; } //из какой ячейки проложен путь в эту
     public int SearchHeuristic { get; set; }//Для приоритета поиска
     public HexCell NextWithSamePriority { get; set; }//следующая ячейка с тем же приоритетом в поиске
+    public int SearchPhase { get; set; } //Отслеживание положения клетки относительно границы поиска 0 - не достигнута 1 - на границе 2 - уже найден путь
 
     public int Distance
     {
@@ -33,7 +34,6 @@ public class HexCell : MonoBehaviour {
         set
         {
             distance = value;
-            UpdateDistanceLabel();
         }
     }
 
@@ -657,12 +657,16 @@ public class HexCell : MonoBehaviour {
             roads[i] = (roadFlags & (1 << i)) != 0;
         }
     }
-
-    void UpdateDistanceLabel()
+    /// <summary>
+    /// Установить текст на клетке
+    /// </summary>
+    /// <param name="text"></param>
+    public void SetLabel(string text)
     {
-        Text label = uiRect.GetComponent<Text>();
-        label.text = distance == int.MaxValue ? "" : distance.ToString();
+        UnityEngine.UI.Text label = uiRect.GetComponent<Text>();
+        label.text = text;
     }
+
 
     /// <summary>
     /// Выкл. подсветку клетки
