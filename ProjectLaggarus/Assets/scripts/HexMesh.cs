@@ -11,15 +11,14 @@ public class HexMesh : MonoBehaviour
 {
 
     Mesh hexMesh;
-    [NonSerialized] List<Vector3> vertices, terrainTypes;
-    [NonSerialized] List<Color> colors;
+    [NonSerialized] List<Vector3> vertices, cellIndices;
+    [NonSerialized] List<Color> cellWeights;
     [NonSerialized] List<int> triangles;
     [NonSerialized] List<Vector2> uvs, uv2s;
 
     MeshCollider meshCollider;
 
-    public bool useCollider, useColors, useUVCoordinates, useUV2Coordinates;
-    public bool useTerrainTypes;
+    public bool useCollider, useCellData, useUVCoordinates, useUV2Coordinates;
 
 
     void Awake()
@@ -38,9 +37,10 @@ public class HexMesh : MonoBehaviour
     {
         hexMesh.Clear();
         vertices = ListPool<Vector3>.Get();
-        if (useColors)
+        if (useCellData)
         {
-            colors = ListPool<Color>.Get();
+            cellWeights = ListPool<Color>.Get();
+            cellIndices = ListPool<Vector3>.Get();
         }
         if (useUVCoordinates)
         {
@@ -49,10 +49,6 @@ public class HexMesh : MonoBehaviour
         if (useUV2Coordinates)
         {
             uv2s = ListPool<Vector2>.Get();
-        }
-        if (useTerrainTypes)
-        {
-            terrainTypes = ListPool<Vector3>.Get();
         }
         triangles = ListPool<int>.Get();
     }
@@ -63,10 +59,12 @@ public class HexMesh : MonoBehaviour
     {
         hexMesh.SetVertices(vertices);
         ListPool<Vector3>.Add(vertices);
-        if (useColors)
+        if (useCellData)
         {
-            hexMesh.SetColors(colors);
-            ListPool<Color>.Add(colors);
+            hexMesh.SetColors(cellWeights);
+            ListPool<Color>.Add(cellWeights);
+            hexMesh.SetUVs(2, cellIndices);
+            ListPool<Vector3>.Add(cellIndices);
         }
         if (useUVCoordinates)
         {
@@ -78,11 +76,6 @@ public class HexMesh : MonoBehaviour
             hexMesh.SetUVs(1, uv2s);
             ListPool<Vector2>.Add(uv2s);
         }
-        if (useTerrainTypes)
-        {
-            hexMesh.SetUVs(2, terrainTypes);
-            ListPool<Vector3>.Add(terrainTypes);
-        }
         hexMesh.SetTriangles(triangles, 0);
         ListPool<int>.Add(triangles);
         hexMesh.RecalculateNormals();
@@ -92,29 +85,6 @@ public class HexMesh : MonoBehaviour
         }
     }
 
-
-    /// <summary>
-    /// Наложение цвета на вершины треугольника
-    /// </summary>
-    /// <param name="color"></param>
-    public void AddTriangleColor(Color color)
-    {
-        colors.Add(color);
-        colors.Add(color);
-        colors.Add(color);
-    }
-    /// <summary>
-    /// Наложение цвета на вершины треугольника
-    /// </summary>
-    /// <param name="c1"></param>
-    /// <param name="c2"></param>
-    /// <param name="c3"></param>
-    public void AddTriangleColor(Color c1, Color c2, Color c3)
-    {
-        colors.Add(c1);
-        colors.Add(c2);
-        colors.Add(c3);
-    }
     /// <summary>
     /// добавление треугольника с искажениями
     /// </summary>
@@ -192,43 +162,7 @@ public class HexMesh : MonoBehaviour
         triangles.Add(vertexIndex + 3);
     }
 
-    /// <summary>
-    /// Наложение цвета на вершины четырехугольника
-    /// </summary>
-    /// <param name="c1"></param>
-    /// <param name="c2"></param>
-    /// <param name="c3"></param>
-    /// <param name="c4"></param>
-    public void AddQuadColor(Color c1, Color c2, Color c3, Color c4)
-    {
-        colors.Add(c1);
-        colors.Add(c2);
-        colors.Add(c3);
-        colors.Add(c4);
-    }
-    /// <summary>
-    /// Наложение цвета на вершины четырехугольника
-    /// </summary>
-    /// <param name="c1"></param>
-    /// <param name="c2"></param>
-    public void AddQuadColor(Color c1, Color c2)
-    {
-        colors.Add(c1);
-        colors.Add(c1);
-        colors.Add(c2);
-        colors.Add(c2);
-    }
-    /// <summary>
-    /// Наложение цвета на вершины четырехугольника
-    /// </summary>
-    /// <param name="color"></param>
-    public void AddQuadColor(Color color)
-    {
-        colors.Add(color);
-        colors.Add(color);
-        colors.Add(color);
-        colors.Add(color);
-    }
+
     /// <summary>
     /// Наложение текстуры треугольника по UV
     /// </summary>
@@ -293,18 +227,73 @@ public class HexMesh : MonoBehaviour
         uv2s.Add(new Vector2(uMax, vMax));
     }
 
-    public void AddTriangleTerrainTypes(Vector3 types)
+
+    /// <summary>
+    /// Добавить цвет и тип местности на полигон
+    /// </summary>
+    /// <param name="indices"></param>
+    /// <param name="weights1"></param>
+    /// <param name="weights2"></param>
+    /// <param name="weights3"></param>
+    public void AddTriangleCellData(Vector3 indices, Color weights1, Color weights2, Color weights3)
     {
-        terrainTypes.Add(types);
-        terrainTypes.Add(types);
-        terrainTypes.Add(types);
+        cellIndices.Add(indices);
+        cellIndices.Add(indices);
+        cellIndices.Add(indices);
+        cellWeights.Add(weights1);
+        cellWeights.Add(weights2);
+        cellWeights.Add(weights3);
     }
 
-    public void AddQuadTerrainTypes(Vector3 types)
+    /// <summary>
+    /// Добавить цвет и тип местности на полигон
+    /// </summary>
+    /// <param name="indices"></param>
+    /// <param name="weights"></param>
+    public void AddTriangleCellData(Vector3 indices, Color weights)
     {
-        terrainTypes.Add(types);
-        terrainTypes.Add(types);
-        terrainTypes.Add(types);
-        terrainTypes.Add(types);
+        AddTriangleCellData(indices, weights, weights, weights);
+    }
+
+    /// <summary>
+    /// Добавить цвет и тип местности на четырехугольник
+    /// </summary>
+    /// <param name="indices"></param>
+    /// <param name="weights1"></param>
+    /// <param name="weights2"></param>
+    /// <param name="weights3"></param>
+    /// <param name="weights4"></param>
+    public void AddQuadCellData(Vector3 indices, Color weights1, Color weights2, Color weights3, Color weights4
+)
+    {
+        cellIndices.Add(indices);
+        cellIndices.Add(indices);
+        cellIndices.Add(indices);
+        cellIndices.Add(indices);
+        cellWeights.Add(weights1);
+        cellWeights.Add(weights2);
+        cellWeights.Add(weights3);
+        cellWeights.Add(weights4);
+    }
+
+    /// <summary>
+    /// Добавить цвет и тип местности на четырехугольник
+    /// </summary>
+    /// <param name="indices"></param>
+    /// <param name="weights1"></param>
+    /// <param name="weights2"></param>
+    public void AddQuadCellData(Vector3 indices, Color weights1, Color weights2)
+    {
+        AddQuadCellData(indices, weights1, weights1, weights2, weights2);
+    }
+
+    /// <summary>
+    /// Добавить цвет и тип местности на четырехугольник
+    /// </summary>
+    /// <param name="indices"></param>
+    /// <param name="weights"></param>
+    public void AddQuadCellData(Vector3 indices, Color weights)
+    {
+        AddQuadCellData(indices, weights, weights, weights, weights);
     }
 }

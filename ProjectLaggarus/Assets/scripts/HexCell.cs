@@ -25,6 +25,40 @@ public class HexCell : MonoBehaviour {
     public HexCell NextWithSamePriority { get; set; }//следующая ячейка с тем же приоритетом в поиске
     public int SearchPhase { get; set; } //Отслеживание положения клетки относительно границы поиска 0 - не достигнута 1 - на границе 2 - уже найден путь
 
+    public HexUnit Unit { get; set; }//юнит на ячейке
+
+    public HexCellShaderData ShaderData { get; set; }
+
+    public int Index { get; set; }//индекс ячейки для типа поверхности
+
+    int visibility;//видна ли ячейка
+
+    public bool IsVisible
+    {
+        get
+        {
+            return visibility > 0;
+        }
+    }
+
+    public void IncreaseVisibility()
+    {
+        visibility += 1;
+        if (visibility == 1)
+        {
+            ShaderData.RefreshVisibility(this);
+        }
+    }
+
+    public void DecreaseVisibility()
+    {
+        visibility -= 1;
+        if (visibility == 0)
+        {
+            ShaderData.RefreshVisibility(this);
+        }
+    }
+
     public int Distance
     {
         get
@@ -218,7 +252,7 @@ public class HexCell : MonoBehaviour {
             if (terrainTypeIndex != value)
             {
                 terrainTypeIndex = value;
-                Refresh();
+                ShaderData.RefreshTerrain(this);
             }
         }
     }
@@ -537,12 +571,20 @@ public class HexCell : MonoBehaviour {
                     neighbor.chunk.Refresh();
                 }
             }
+            if (Unit)
+            {
+                Unit.ValidateLocation();
+            }
         }
     }
 
     void RefreshSelfOnly()//обновление только одного чанка
     {
         chunk.Refresh();
+        if (Unit)
+        {
+            Unit.ValidateLocation();
+        }
     }
 
     public HexCell GetNeighbor(HexDirection direction)//взять соседа
@@ -620,6 +662,7 @@ public class HexCell : MonoBehaviour {
     {
         //кодирование см. в Save
         terrainTypeIndex = reader.ReadByte();
+        ShaderData.RefreshTerrain(this);
         elevation = reader.ReadByte();
         RefreshPosition();
         waterLevel = reader.ReadByte();

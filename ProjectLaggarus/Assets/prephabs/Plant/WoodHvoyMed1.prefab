@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 33562933965734306}
   - component: {fileID: 23925807328664734}
   m_Layer: 0
-  m_Name: elka1
+  m_Name: WoodHvoyMed1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
