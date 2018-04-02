@@ -12,8 +12,6 @@ public class HexMapEditor : MonoBehaviour
 
     OptionalToggle riverMode, roadMode, walledMode;
 
-    bool editMode;// вкл/выкл режим редактирования
-
     public HexGrid hexGrid;//глобальный грид
 
     int activeWaterLevel;//Активный уровень воды
@@ -33,37 +31,53 @@ public class HexMapEditor : MonoBehaviour
 
     bool isDrag;//детекция перетаскивания
     HexDirection dragDirection;//направление перетаскивания
-    HexCell previousCell, searchFromCell, searchToCell;//последняя клетка при перетаскивании, клетка с которой идет поиск пути и до которой идет поиск
+    HexCell previousCell;//последняя клетка при перетаскивании
 
     void Awake()
     {
         terrainMaterial.DisableKeyword("GRID_ON");
+        SetEditMode(false);
     }
 
     void Update()
     {
-        if (
-            Input.GetMouseButton(0) &&
-            !EventSystem.current.IsPointerOverGameObject()
-        )
+        if (!EventSystem.current.IsPointerOverGameObject())
         {
-            HandleInput();
+            if (Input.GetMouseButton(0))
+            {
+                HandleInput();
+                return;
+            }
+            if (Input.GetKeyDown(KeyCode.U))
+            {
+                if (Input.GetKey(KeyCode.LeftShift))
+                {
+                    DestroyUnit();
+                }
+                else
+                {
+                    CreateUnit();
+                }
+            }
         }
-        else
-        {
-            previousCell = null;//если не тащим, то обнуляем ячейку
-        }
+        previousCell = null;
+    }
 
+    /// <summary>
+    /// Получить клетку по положению курсора
+    /// </summary>
+    /// <returns></returns>
+    HexCell GetCellUnderCursor()
+    {
+        return
+            hexGrid.GetCell(Camera.main.ScreenPointToRay(Input.mousePosition));
     }
 
     void HandleInput()
     {
-        Ray inputRay = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-        if (Physics.Raycast(inputRay, out hit))
+        HexCell currentCell = GetCellUnderCursor();
+        if (currentCell)
         {
-            //Debug.Log(hit.point.x + " " + hit.point.y + " " + hit.point.z);
-            HexCell currentCell = hexGrid.GetCell(hit.point);
             if (previousCell && previousCell != currentCell)//условие для проверки(чтобы не сработало на null или ту же самую ячейка)
             {
                 ValidateDrag(currentCell);
@@ -72,28 +86,7 @@ public class HexMapEditor : MonoBehaviour
             {
                 isDrag = false;
             }
-            if (editMode)
-            {
-                EditCells(currentCell);
-            }
-            else if (Input.GetKey(KeyCode.LeftShift) && searchToCell != currentCell)
-            {
-                if (searchFromCell)
-                {
-                    searchFromCell.DisableHighlight();
-                }
-                searchFromCell = currentCell;
-                searchFromCell.EnableHighlight(Color.blue);
-                if (searchToCell)
-                {
-                    hexGrid.FindPath(searchFromCell, searchToCell);
-                }
-            }
-            else if (searchFromCell && searchFromCell != currentCell)
-            {
-                searchToCell = currentCell;
-                hexGrid.FindPath(searchFromCell, searchToCell);
-            }
+            EditCells(currentCell);
             previousCell = currentCell;
         }
         else
@@ -306,7 +299,24 @@ public class HexMapEditor : MonoBehaviour
 
     public void SetEditMode(bool toggle)
     {
-        editMode = toggle;
-        hexGrid.ShowUI(!toggle);
+        enabled = toggle;
+    }
+
+    void CreateUnit()
+    {
+        HexCell cell = GetCellUnderCursor();
+        if (cell && !cell.Unit)
+        {
+            hexGrid.AddUnit(Instantiate(HexUnit.unitPrefab), cell, Random.Range(0f, 360f));
+        }
+    }
+
+    void DestroyUnit()
+    {
+        HexCell cell = GetCellUnderCursor();
+        if (cell && cell.Unit)
+        {
+            hexGrid.RemoveUnit(cell.Unit);
+        }
     }
 }

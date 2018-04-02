@@ -23,6 +23,41 @@ public class HexCell : MonoBehaviour {
     public HexCell PathFrom { get; set; } //из какой ячейки проложен путь в эту
     public int SearchHeuristic { get; set; }//Для приоритета поиска
     public HexCell NextWithSamePriority { get; set; }//следующая ячейка с тем же приоритетом в поиске
+    public int SearchPhase { get; set; } //Отслеживание положения клетки относительно границы поиска 0 - не достигнута 1 - на границе 2 - уже найден путь
+
+    public HexUnit Unit { get; set; }//юнит на ячейке
+
+    public HexCellShaderData ShaderData { get; set; }
+
+    public int Index { get; set; }//индекс ячейки для типа поверхности
+
+    int visibility;//видна ли ячейка
+
+    public bool IsVisible
+    {
+        get
+        {
+            return visibility > 0;
+        }
+    }
+
+    public void IncreaseVisibility()
+    {
+        visibility += 1;
+        if (visibility == 1)
+        {
+            ShaderData.RefreshVisibility(this);
+        }
+    }
+
+    public void DecreaseVisibility()
+    {
+        visibility -= 1;
+        if (visibility == 0)
+        {
+            ShaderData.RefreshVisibility(this);
+        }
+    }
 
     public int Distance
     {
@@ -33,7 +68,6 @@ public class HexCell : MonoBehaviour {
         set
         {
             distance = value;
-            UpdateDistanceLabel();
         }
     }
 
@@ -218,7 +252,7 @@ public class HexCell : MonoBehaviour {
             if (terrainTypeIndex != value)
             {
                 terrainTypeIndex = value;
-                Refresh();
+                ShaderData.RefreshTerrain(this);
             }
         }
     }
@@ -537,12 +571,20 @@ public class HexCell : MonoBehaviour {
                     neighbor.chunk.Refresh();
                 }
             }
+            if (Unit)
+            {
+                Unit.ValidateLocation();
+            }
         }
     }
 
     void RefreshSelfOnly()//обновление только одного чанка
     {
         chunk.Refresh();
+        if (Unit)
+        {
+            Unit.ValidateLocation();
+        }
     }
 
     public HexCell GetNeighbor(HexDirection direction)//взять соседа
@@ -620,6 +662,7 @@ public class HexCell : MonoBehaviour {
     {
         //кодирование см. в Save
         terrainTypeIndex = reader.ReadByte();
+        ShaderData.RefreshTerrain(this);
         elevation = reader.ReadByte();
         RefreshPosition();
         waterLevel = reader.ReadByte();
@@ -657,12 +700,16 @@ public class HexCell : MonoBehaviour {
             roads[i] = (roadFlags & (1 << i)) != 0;
         }
     }
-
-    void UpdateDistanceLabel()
+    /// <summary>
+    /// Установить текст на клетке
+    /// </summary>
+    /// <param name="text"></param>
+    public void SetLabel(string text)
     {
-        Text label = uiRect.GetComponent<Text>();
-        label.text = distance == int.MaxValue ? "" : distance.ToString();
+        UnityEngine.UI.Text label = uiRect.GetComponent<Text>();
+        label.text = text;
     }
+
 
     /// <summary>
     /// Выкл. подсветку клетки

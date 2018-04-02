@@ -611,10 +611,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   useCollider: 0
-  useColors: 0
+  useCellData: 0
   useUVCoordinates: 0
   useUV2Coordinates: 0
-  useTerrainTypes: 0
 --- !u!114 &114464551326229492
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -627,10 +626,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   useCollider: 0
-  useColors: 0
+  useCellData: 1
   useUVCoordinates: 0
   useUV2Coordinates: 0
-  useTerrainTypes: 0
 --- !u!114 &114479304999853870
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -664,10 +662,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   useCollider: 0
-  useColors: 0
+  useCellData: 1
   useUVCoordinates: 1
   useUV2Coordinates: 0
-  useTerrainTypes: 0
 --- !u!114 &114640900210403324
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -684,11 +681,11 @@ MonoBehaviour:
     - {fileID: 4261959524988296, guid: 19c810bf6abc94a4f87296bbe7723a53, type: 2}
     - {fileID: 4261959524988296, guid: db6e05b016629944a9515f78c17ba264, type: 2}
   - prefabs:
-    - {fileID: 4261959524988296, guid: a77916ed51d173b45ad0a0e729db26f5, type: 2}
-    - {fileID: 4261959524988296, guid: 45e35332ad634f144b87086550a5e27f, type: 2}
+    - {fileID: 4074278864992684, guid: 9fc3b9d571c5c7f4e8c2c005a9bf524c, type: 2}
+    - {fileID: 4074278864992684, guid: 9fc3b9d571c5c7f4e8c2c005a9bf524c, type: 2}
   - prefabs:
-    - {fileID: 4261959524988296, guid: 7d05e840bb1a1c44b90932ee9b012553, type: 2}
-    - {fileID: 4261959524988296, guid: cd79a8490d7a83d4781b536edff56940, type: 2}
+    - {fileID: 4825803100863290, guid: f47a18efa1bbca641a4ffbb36b437275, type: 2}
+    - {fileID: 4013139730930336, guid: 62c80969e036b5342ae68554279fa4b6, type: 2}
   farmCollections:
   - prefabs:
     - {fileID: 4269603632042682, guid: a2c03142f858ffc4fb9e5482115436ca, type: 2}
@@ -705,7 +702,7 @@ MonoBehaviour:
     - {fileID: 4881682578435390, guid: 1d67dbcebae9e0745a2fece8dafa6764, type: 2}
   - prefabs:
     - {fileID: 4617521684823044, guid: 6d80e7683a5b07d4a898964104cd0f3b, type: 2}
-    - {fileID: 4617521684823044, guid: 6d80e7683a5b07d4a898964104cd0f3b, type: 2}
+    - {fileID: 4926462907521756, guid: 22b2e776f1cea574abd5ca89b4357bfb, type: 2}
   - prefabs:
     - {fileID: 4881682578435390, guid: 032ee9163cf4fb241be61520b18ba18c, type: 2}
     - {fileID: 4881682578435390, guid: 1a352fb7ef59b2e4b8bc3003fd53c1ab, type: 2}
@@ -728,10 +725,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   useCollider: 0
-  useColors: 0
+  useCellData: 1
   useUVCoordinates: 1
   useUV2Coordinates: 1
-  useTerrainTypes: 0
 --- !u!114 &114703496061703412
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -744,10 +740,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   useCollider: 1
-  useColors: 1
+  useCellData: 1
   useUVCoordinates: 0
   useUV2Coordinates: 0
-  useTerrainTypes: 1
 --- !u!114 &114903915035597414
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -760,10 +755,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   useCollider: 0
-  useColors: 0
+  useCellData: 1
   useUVCoordinates: 1
   useUV2Coordinates: 0
-  useTerrainTypes: 0
 --- !u!114 &114910310449814584
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -775,7 +769,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aade37a28f98b1040a8d20a239e68602, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Terrain: {fileID: 114703496061703412}
+  terrain: {fileID: 114703496061703412}
   rivers: {fileID: 114539771401983912}
   roads: {fileID: 114903915035597414}
   water: {fileID: 114464551326229492}
@@ -794,10 +788,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   useCollider: 0
-  useColors: 0
+  useCellData: 1
   useUVCoordinates: 1
   useUV2Coordinates: 0
-  useTerrainTypes: 0
 --- !u!223 &223100936402450364
 Canvas:
   m_ObjectHideFlags: 1
