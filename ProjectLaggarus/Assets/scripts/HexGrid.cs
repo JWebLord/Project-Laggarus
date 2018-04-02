@@ -41,6 +41,7 @@ public class HexGrid : MonoBehaviour {
         HexMetrics.InitializeHashGrid(seed);
         HexUnit.unitPrefab = unitPrefab;
         cellShaderData = gameObject.AddComponent<HexCellShaderData>();
+        cellShaderData.Grid = this;
         CreateMap(cellCountX, cellCountZ);
     }
 
@@ -114,6 +115,7 @@ public class HexGrid : MonoBehaviour {
             HexMetrics.noiseSource = noiseSource;
             HexMetrics.InitializeHashGrid(seed);
             HexUnit.unitPrefab = unitPrefab;
+            ResetVisibility();
         }
     }
 
@@ -137,6 +139,10 @@ public class HexGrid : MonoBehaviour {
         cell.coordinates = HexCoordinates.FromOffsetCoordinates(x, z);//перевод координат из смещения в кубические (в локальной переменной)
         cell.Index = i;
         cell.ShaderData = cellShaderData;
+
+        //скрытие края карты
+        cell.Explorable =
+            x > 0 && z > 0 && x < cellCountX - 1 && z < cellCountZ - 1;
 
         if (x > 0)
         {
@@ -255,9 +261,13 @@ public class HexGrid : MonoBehaviour {
             }
         }
 
+        bool originalImmediateMode = cellShaderData.ImmediateMode;
+        //отключение зон частичной видимости во время движения для уменьшения нагрузки во время загрузки
+        cellShaderData.ImmediateMode = true;
+
         for (int i = 0; i < cells.Length; i++)
         {
-            cells[i].Load(reader);
+            cells[i].Load(reader, header);
         }
         for (int i = 0; i < chunks.Length; i++)
         {
@@ -273,6 +283,8 @@ public class HexGrid : MonoBehaviour {
                 HexUnit.Load(reader, this);
             }
         }
+
+        cellShaderData.ImmediateMode = originalImmediateMode;
     }
 
     /// <summary>
@@ -280,14 +292,14 @@ public class HexGrid : MonoBehaviour {
     /// </summary>
     /// <param name="fromCell"></param>
     /// <param name="toCell"></param>
-    public void FindPath(HexCell fromCell, HexCell toCell, int speed)
+    public void FindPath(HexCell fromCell, HexCell toCell, HexUnit unit)
     {
         ClearPath();
         currentPathFrom = fromCell;
         currentPathTo = toCell;
         //собственно сам поиск
-        currentPathExists = Search(fromCell, toCell, speed);
-        ShowPath(speed);
+        currentPathExists = Search(fromCell, toCell, unit);
+        ShowPath(unit.Speed);
     }
 
     /// <summary>
@@ -296,8 +308,10 @@ public class HexGrid : MonoBehaviour {
     /// <param name="fromCell"></param>
     /// <param name="toCell"></param>
     /// <returns></returns>
-    bool Search(HexCell fromCell, HexCell toCell, int speed)
+    bool Search(HexCell fromCell, HexCell toCell, HexUnit unit)
     {
+        int speed = unit.Speed;
+
         searchFrontierPhase += 2;
 
         if (searchFrontier == null)
@@ -335,34 +349,15 @@ public class HexGrid : MonoBehaviour {
                 {
                     continue;
                 }
-                //обход воды и юнитов
-                if (neighbor.IsUnderwater || neighbor.Unit)
+
+                if (!unit.IsValidDestination(neighbor))
                 {
                     continue;
                 }
-                //обход гор
-                HexEdgeType edgeType = current.GetEdgeType(neighbor);
-                if (current.GetEdgeType(neighbor) == HexEdgeType.Cliff)
+                int moveCost = unit.GetMoveCost(current, neighbor, d);
+                if (moveCost < 0)
                 {
                     continue;
-                }
-                //стоимость движения
-                int moveCost;
-                //ускорение от дорог
-                if (current.HasRoadThroughEdge(d))
-                {
-                    moveCost = 1;
-                }
-                //нельзя проходить через стены, но если дорога есть, то пройдем через предыдущее условие
-                else if (current.Walled != neighbor.Walled)
-                {
-                    continue;
-                }
-                else
-                //+5 если равнина +10 если терасса + замедление если на клетке что-то есть
-                {
-                    moveCost = edgeType == HexEdgeType.Flat ? 5 : 10;
-                    moveCost += neighbor.UrbanLevel + neighbor.FarmLevel + neighbor.PlantLevel;
                 }
 
                 //расстояние до клетки назначения
@@ -533,9 +528,12 @@ public class HexGrid : MonoBehaviour {
             searchFrontier.Clear();
         }
 
+
+        range += fromCell.ViewElevation;
         fromCell.SearchPhase = searchFrontierPhase;
         fromCell.Distance = 0;
         searchFrontier.Enqueue(fromCell);
+        HexCoordinates fromCoordinates = fromCell.coordinates;
         while (searchFrontier.Count > 0)
         {
             HexCell current = searchFrontier.Dequeue();
@@ -547,14 +545,22 @@ public class HexGrid : MonoBehaviour {
             for (HexDirection d = HexDirection.NE; d <= HexDirection.NW; d++)
             {
                 HexCell neighbor = current.GetNeighbor(d);
-                //если соседа нет или есть еще не достигнутые клетки, то в первую очередь обходим их
-                if (neighbor == null || neighbor.SearchPhase > searchFrontierPhase)
+                //если соседа нет или есть еще не достигнутые клетки, то в первую очередь обходим их и не обходим клетки которые не могут быть исследованы
+                if (neighbor == null || neighbor.SearchPhase > searchFrontierPhase ||
+                    !neighbor.Explorable)
                 {
                     continue;
                 }
 
                 //расстояние до клетки назначения
                 int distance = current.Distance + 1;
+                //ограничение на видимость по расстоянию до клетки и высоте
+                if (distance + neighbor.ViewElevation > range ||
+                    distance > fromCoordinates.DistanceTo(neighbor.coordinates)
+                )
+                    {
+                    continue;
+                }
 
                 if (distance > range)
                 {
@@ -579,7 +585,11 @@ public class HexGrid : MonoBehaviour {
         }
         return visibleCells;
     }
-
+    /// <summary>
+    /// Увеличить видимость в зоне от ячейки
+    /// </summary>
+    /// <param name="fromCell"></param>
+    /// <param name="range"></param>
     public void IncreaseVisibility(HexCell fromCell, int range)
     {
         List<HexCell> cells = GetVisibleCells(fromCell, range);
@@ -589,7 +599,11 @@ public class HexGrid : MonoBehaviour {
         }
         ListPool<HexCell>.Add(cells);
     }
-
+    /// <summary>
+    /// Уменьшить видимость в зоне от ячейки
+    /// </summary>
+    /// <param name="fromCell"></param>
+    /// <param name="range"></param>
     public void DecreaseVisibility(HexCell fromCell, int range)
     {
         List<HexCell> cells = GetVisibleCells(fromCell, range);
@@ -598,6 +612,24 @@ public class HexGrid : MonoBehaviour {
             cells[i].DecreaseVisibility();
         }
         ListPool<HexCell>.Add(cells);
+    }
+
+    /// <summary>
+    /// Сброс видимости на карте
+    /// </summary>
+    public void ResetVisibility()
+    {
+        //ресет
+        for (int i = 0; i < cells.Length; i++)
+        {
+            cells[i].ResetVisibility();
+        }
+        //перерасчёт
+        for (int i = 0; i < units.Count; i++)
+        {
+            HexUnit unit = units[i];
+            IncreaseVisibility(unit.Location, unit.VisionRange);
+        }
     }
 }
 
