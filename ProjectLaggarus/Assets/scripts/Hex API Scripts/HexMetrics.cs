@@ -7,6 +7,7 @@ public static class HexMetrics
 
     public const float outerRadius = 10f;//внешний радиус
     public const float innerRadius = outerRadius * outerToInner;//внутренний радиус sqrt(3)/2
+    public const float innerDiameter = innerRadius * 2f;//диаметр вписанной окружности
 
     public const float solidFactor = 0.8f;
     public const float blendFactor = 1f - solidFactor;
@@ -43,6 +44,8 @@ public static class HexMetrics
     public const float bridgeDesignLength = 7f;//длина мостов(модели) и т.д.
     public const float bridgeDesignHeight = 1f;
     public const float bridgeDesignWidth = 3f;
+
+    public static int wrapSize;//влияние бесшовности
 
 
     public static Texture2D noiseSource;
@@ -136,7 +139,22 @@ public static class HexMetrics
     /// <returns></returns>
     public static Vector4 SampleNoise(Vector3 position)
     {
-        return noiseSource.GetPixelBilinear(position.x * noiseScale, position.y * noiseScale);
+        Vector4 sample = noiseSource.GetPixelBilinear(
+            position.x * noiseScale,
+            position.z * noiseScale
+        );
+
+        if (Wrapping && position.x < innerDiameter * 1.5f)
+        {
+            Vector4 sample2 = noiseSource.GetPixelBilinear(
+                (position.x + wrapSize * innerDiameter) * noiseScale,
+                position.z * noiseScale
+            );
+            sample = Vector4.Lerp(sample2, sample, position.x * (1f / innerDiameter) - 0.5f);
+        }
+        
+
+        return sample;
     }
     /// <summary>
     /// Изменить вектор с помощью шума
@@ -227,5 +245,13 @@ public static class HexMetrics
             near.y < far.y ? wallElevationOffset : (1f - wallElevationOffset);
         near.y += (far.y - near.y) * v + wallYOffset;
         return near;
+    }
+
+    public static bool Wrapping
+    {
+        get
+        {
+            return wrapSize > 0;
+        }
     }
 }

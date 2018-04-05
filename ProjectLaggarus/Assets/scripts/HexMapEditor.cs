@@ -18,11 +18,11 @@ public class HexMapEditor : MonoBehaviour
 
     public Material terrainMaterial;//ссылка на материал поверхности
 
-    bool applyElevation = true;//редактировать ли высоту
-    bool applyWaterLevel = true;//редактировать ли уровень высоты
+    bool applyElevation = false;//редактировать ли высоту
+    bool applyWaterLevel = false;//редактировать ли уровень высоты
     bool applyUrbanLevel, applyFarmLevel, applyPlantLevel, applySpecialIndex;//редактировать ли застройку, фермы, мегаструктуры и леса
 
-    int activeTerrainTypeIndex;//индекс типа поверхности клетки
+    int activeTerrainTypeIndex = -1;//индекс типа поверхности клетки
 
     private int activeElevation;//активная высота
     private int activeUrbanLevel, activeFarmLevel, activePlantLevel, activeSpecialIndex;//активный уровень застройки, ферм, мегаструктур и лесов
@@ -36,7 +36,8 @@ public class HexMapEditor : MonoBehaviour
     void Awake()
     {
         terrainMaterial.DisableKeyword("GRID_ON");
-        SetEditMode(false);
+        Shader.EnableKeyword("HEX_MAP_EDIT_MODE");
+        SetEditMode(true);
     }
 
     void Update()

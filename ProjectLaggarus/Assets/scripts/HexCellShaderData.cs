@@ -56,7 +56,8 @@ public class HexCellShaderData : MonoBehaviour
         {
             cellTexture = new Texture2D(x, z, TextureFormat.RGBA32, false, true);
             cellTexture.filterMode = FilterMode.Point;
-            cellTexture.wrapMode = TextureWrapMode.Clamp;
+            cellTexture.wrapModeU = TextureWrapMode.Repeat;
+            cellTexture.wrapModeV = TextureWrapMode.Clamp;
             Shader.SetGlobalTexture("_HexCellData", cellTexture);
         }
 
@@ -145,6 +146,18 @@ public class HexCellShaderData : MonoBehaviour
     public void ViewElevationChanged()
     {
         needsVisibilityReset = true;
+        enabled = true;
+    }
+
+    /// <summary>
+    /// Установить данные карты для "сырого" отображения карты через шейдер
+    /// </summary>
+    /// <param name="cell"></param>
+    /// <param name="data"></param>
+    public void SetMapData(HexCell cell, float data)
+    {
+        cellTextureData[cell.Index].b =
+            data < 0f ? (byte)0 : (data < 1f ? (byte)(data * 254f) : (byte)254);
         enabled = true;
     }
 }

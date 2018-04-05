@@ -4,6 +4,28 @@ public class NewMapMenu : MonoBehaviour {
 
     public HexGrid hexGrid;
 
+    public HexMapGenerator mapGenerator;
+
+    /// <summary>
+    /// Генерировать карту или содать плоскость
+    /// </summary>
+    bool generateMaps = true;
+
+    /// <summary>
+    /// Влл/выкл бесшовность
+    /// </summary>
+    bool wrapping = true;
+
+    public void ToggleWrapping(bool toggle)
+    {
+        wrapping = toggle;
+    }
+
+    public void ToggleMapGeneration(bool toggle)
+    {
+        generateMaps = toggle;
+    }
+
     public void Open()
     {
         gameObject.SetActive(true);
@@ -18,7 +40,15 @@ public class NewMapMenu : MonoBehaviour {
 
     void CreateMap(int x, int z)
     {
-        hexGrid.CreateMap(x, z);
+        //проверка способа создания карты
+        if (generateMaps)
+        {
+            mapGenerator.GenerateMap(x, z, wrapping);
+        }
+        else
+        {
+            hexGrid.CreateMap(x, z, wrapping);
+        }
         HexMapCamera.ValidatePosition();
         Close();
     }
@@ -35,6 +65,6 @@ public class NewMapMenu : MonoBehaviour {
 
     public void CreateLargeMap()
     {
-        CreateMap(80, 60);
+        CreateMap(120, 80);
     }
 }

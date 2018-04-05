@@ -35,6 +35,8 @@ public class HexCell : MonoBehaviour {
     bool explored; //исследована ли ячейка(переменная)
     public bool Explorable { get; set; }//возможно ли вообще исследовать ячейку(для краев карты(по крайней мере сделана для этого))
 
+    public int ColumnIndex { get; set; }//Индекс столбца чанков
+
     /// <summary>
     /// исследована ли ячейка(св-во)
     /// </summary>
@@ -656,7 +658,7 @@ public class HexCell : MonoBehaviour {
     {
         //некоторые пишутся в байт, т.к. диапазон небольшой
         writer.Write((byte)terrainTypeIndex);
-        writer.Write((byte)elevation);
+        writer.Write((byte)(elevation + 127));
         writer.Write((byte)waterLevel);
         writer.Write((byte)urbanLevel);
         writer.Write((byte)farmLevel);
@@ -706,6 +708,10 @@ public class HexCell : MonoBehaviour {
         terrainTypeIndex = reader.ReadByte();
         ShaderData.RefreshTerrain(this);
         elevation = reader.ReadByte();
+        if (header >= 4)
+        {
+            elevation -= 127;
+        }
         RefreshPosition();
         waterLevel = reader.ReadByte();
         urbanLevel = reader.ReadByte();
@@ -798,6 +804,15 @@ public class HexCell : MonoBehaviour {
             visibility = 0;
             ShaderData.RefreshVisibility(this);
         }
+    }
+
+    /// <summary>
+    /// Установить данные карты для "сырого" отображения карты через шейдер
+    /// </summary>
+    /// <param name="data"></param>
+    public void SetMapData(float data)
+    {
+        ShaderData.SetMapData(this, data);
     }
 
 }

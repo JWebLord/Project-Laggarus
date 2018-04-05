@@ -219,6 +219,14 @@ public class HexGridChunk : MonoBehaviour {
         water.AddTriangleCellData(indices, weights1);
 
         Vector3 center2 = neighbor.Position;
+        if (neighbor.ColumnIndex < cell.ColumnIndex - 1)
+        {
+            center2.x += HexMetrics.wrapSize * HexMetrics.innerDiameter;
+        }
+        else if (neighbor.ColumnIndex > cell.ColumnIndex + 1)
+        {
+            center2.x -= HexMetrics.wrapSize * HexMetrics.innerDiameter;
+        }
         center2.y = center.y;
         EdgeVertices e2 = new EdgeVertices(
             center2 + HexMetrics.GetSecondSolidCorner(direction.Opposite()),
@@ -227,7 +235,7 @@ public class HexGridChunk : MonoBehaviour {
 
         if (cell.HasRiverThroughEdge(direction))
         {
-            TriangulateEstuary(e1, e2, cell.IncomingRiver == direction, indices);
+            TriangulateEstuary(e1, e2, cell.HasIncomingRiver && cell.IncomingRiver == direction, indices);
         }
         else
         {
@@ -248,7 +256,17 @@ public class HexGridChunk : MonoBehaviour {
         HexCell nextNeighbor = cell.GetNeighbor(direction.Next());
         if (nextNeighbor != null)
         {
-            Vector3 v3 = nextNeighbor.Position + (nextNeighbor.IsUnderwater ?
+            Vector3 center3 = nextNeighbor.Position;
+            if (nextNeighbor.ColumnIndex < cell.ColumnIndex - 1)
+            {
+                center3.x += HexMetrics.wrapSize * HexMetrics.innerDiameter;
+            }
+            else if (nextNeighbor.ColumnIndex > cell.ColumnIndex + 1)
+            {
+                center3.x -= HexMetrics.wrapSize * HexMetrics.innerDiameter;
+            }
+
+            Vector3 v3 = center3 + (nextNeighbor.IsUnderwater ?
                 HexMetrics.GetFirstWaterCorner(direction.Previous()) :
                 HexMetrics.GetFirstSolidCorner(direction.Previous()));
             v3.y = center.y;
