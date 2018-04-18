@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Collections;
+using System;
 
 public class HexUnit : MonoBehaviour
 {
@@ -13,7 +14,19 @@ public class HexUnit : MonoBehaviour
     const float travelSpeed = 4f;//Скорость анимации движения юнита
     const float rotationSpeed = 180f;//Скорость анимации поворота юнита
 
+    public HexCell currentDestinationCell;
+
     public HexGrid Grid { get; set; }
+    /// <summary>
+    /// Оставшиеся очки передвижения
+    /// </summary>
+    private int speed;
+    /// <summary>
+    /// Кол-во очков, которое должно быть у юнита в начале следующего хода
+    /// </summary>
+    public const int unitSpeedPerTurn = 24;
+
+    
 
     /// <summary>
     /// Дальность видимости юнита
@@ -34,7 +47,7 @@ public class HexUnit : MonoBehaviour
     {
         get
         {
-            return 24;
+            return speed;
         }
     }
 
@@ -76,6 +89,11 @@ public class HexUnit : MonoBehaviour
                 currentTravelLocation = null;
             }
         }
+    }
+
+    private void Awake()
+    {
+        speed = unitSpeedPerTurn;
     }
 
     void OnEnable()
@@ -124,8 +142,31 @@ public class HexUnit : MonoBehaviour
         location.Unit = this;
 
         pathToTravel = path;
+        updateUnitSpeed(path);
         StopAllCoroutines();
         StartCoroutine(TravelPath());
+    }
+
+    /// <summary>
+    /// Обновить очки передвижения после совершения движения
+    /// </summary>
+    /// <param name="path"></param>
+    private void updateUnitSpeed(List<HexCell> path)
+    {
+        speed = speed - path[path.Count - 1].Distance;
+        if (speed < 0) {
+            Debug.Log("Unit speed error, current unit speed is " + speed.ToString());
+            speed = 0;
+        }
+        else { Debug.Log("Unit speed is " + speed.ToString()); }
+    }
+
+    /// <summary>
+    /// Восстановить скорость юнита
+    /// </summary>
+    public void RestoreUnitSpeed()
+    {
+        speed = unitSpeedPerTurn;
     }
 
     //Скольжение по пути(анимация)

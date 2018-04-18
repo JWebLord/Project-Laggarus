@@ -26,11 +26,11 @@ public class HexGrid : MonoBehaviour {
 
     HexCellPriorityQueue searchFrontier;//лист очередей приоритета поиска пути
     int searchFrontierPhase;
-    HexCell currentPathFrom, currentPathTo;
+    HexCell currentPathFrom, currentPathTo, currentPathReach;
     bool currentPathExists;//Существование пути
 
     public HexUnit unitPrefab;
-    List<HexUnit> units = new List<HexUnit>();//лист юнитов
+    public List<HexUnit> units = new List<HexUnit>();//лист юнитов
 
     HexCellShaderData cellShaderData;//информация для шейдера
 
@@ -396,22 +396,25 @@ public class HexGrid : MonoBehaviour {
     }
 
     /// <summary>
-    /// Расчитать расстояние до клетки
+    /// Расчитать расстояние до клетки(только для выделенных юнитов)
     /// </summary>
     /// <param name="fromCell"></param>
     /// <param name="toCell"></param>
-    public void FindPath(HexCell fromCell, HexCell toCell, HexUnit unit)
+    public void FindPath(HexCell fromCell, HexCell toCell, HexUnit unit, bool showPath = false)
     {
         ClearPath();
         currentPathFrom = fromCell;
         currentPathTo = toCell;
         //собственно сам поиск
-        currentPathExists = Search(fromCell, toCell, unit);
-        ShowPath(unit.Speed);
+        if(unit.Speed >= 1)
+        {
+            currentPathExists = Search(fromCell, toCell, unit);
+            ShowPath(unit.Speed, showPath);
+        }
     }
 
     /// <summary>
-    /// ENumerator для поиска пути
+    /// Поиск пути
     /// </summary>
     /// <param name="fromCell"></param>
     /// <param name="toCell"></param>
@@ -436,12 +439,14 @@ public class HexGrid : MonoBehaviour {
         searchFrontier.Enqueue(fromCell);
         while (searchFrontier.Count > 0)
         {
+            Debug.Log(toCell);
             HexCell current = searchFrontier.Dequeue();
             current.SearchPhase += 1;
 
             //выход из подпрограммы, если достигнута клетка, путь до которой нужно найти и подсветка пути
             if (current == toCell)
             {
+                Debug.Log("Успешно");
                 return true;
             }
 
@@ -483,8 +488,18 @@ public class HexGrid : MonoBehaviour {
                     neighbor.SearchPhase = searchFrontierPhase;
                     neighbor.Distance = distance;
                     neighbor.PathFrom = current;
-                    neighbor.SearchHeuristic = neighbor.coordinates.DistanceTo(toCell.coordinates);
-                    searchFrontier.Enqueue(neighbor);
+                    try
+                    {
+                        neighbor.SearchHeuristic = neighbor.coordinates.DistanceTo(toCell.coordinates);
+                        searchFrontier.Enqueue(neighbor);
+                    }
+                    catch (System.Exception)
+                    {
+                        Debug.Log(neighbor);
+                        Debug.Log(toCell);
+                        throw;
+                    }
+                    
                 }
                 else if (distance < neighbor.Distance)
                 {
@@ -503,21 +518,44 @@ public class HexGrid : MonoBehaviour {
     /// Показать путь от клетки до клетки в ходах
     /// </summary>
     /// <param name="speed"></param>
-    void ShowPath(int speed)
+    void ShowPath(int speed, bool showPath)
     {
         if (currentPathExists)
         {
             HexCell current = currentPathTo;
+            //currentPathReach = null;
+            int previousTurn = 0;//чтобы вернуться к клетке, которой можно достигнуть
             while (current != currentPathFrom)
             {
+
                 int turn = (current.Distance - 1) / speed;
                 current.SetLabel(turn.ToString());
-                current.EnableHighlight(Color.white);
+                if (previousTurn >= 1 && turn == 0)
+                {
+                    currentPathReach = current;
+                    if (showPath) current.EnableHighlight(Color.green);//Ту клетку, которой можем достичь подсвечиваем зеленым
+                }
+                else
+                {
+                    if (showPath) current.EnableHighlight(Color.white);
+                }
+                previousTurn = turn;
                 current = current.PathFrom;
             }
         }
-        currentPathFrom.EnableHighlight(Color.blue);
-        currentPathTo.EnableHighlight(Color.red);
+
+        if (showPath) currentPathFrom.EnableHighlight(Color.blue);
+        if (showPath) currentPathTo.EnableHighlight(Color.red);
+        
+        if (currentPathReach == null && currentPathTo.Distance <= speed)
+        {
+            currentPathReach = currentPathTo;
+        }
+        else if(!currentPathReach)
+        {
+            ClearPath();//сначала очистка пути, иначе не будет работать
+            currentPathExists = false;//временный костыль, пока не сделал нормальное сохраниение пути
+        }
     }
 
     /// <summary>
@@ -537,8 +575,14 @@ public class HexGrid : MonoBehaviour {
             current.DisableHighlight();
             currentPathExists = false;
         }
-        currentPathFrom = currentPathTo = null;
+        else if (currentPathFrom)
+        {
+            currentPathFrom.DisableHighlight();
+            currentPathTo.DisableHighlight();
+        }
+        currentPathFrom = currentPathTo = currentPathReach = null;
     }
+
 
     /// <summary>
     /// Убрать все юниты
@@ -616,7 +660,7 @@ public class HexGrid : MonoBehaviour {
             return null;
         }
         List<HexCell> path = ListPool<HexCell>.Get();
-        for (HexCell c = currentPathTo; c != currentPathFrom; c = c.PathFrom)
+        for (HexCell c = currentPathReach; c != currentPathFrom; c = c.PathFrom)
         {
             path.Add(c);
         }

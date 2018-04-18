@@ -18,11 +18,11 @@ public class HexGameUI : MonoBehaviour
             }
             else if (selectedUnit)
             {
-                if (Input.GetMouseButtonDown(1))
+                if (Input.GetMouseButtonUp(1))
                 {
                     DoMove();
                 }
-                else
+                else if (Input.GetMouseButton(1))
                 {
                     DoPathfinding();
                 }
@@ -72,7 +72,8 @@ public class HexGameUI : MonoBehaviour
         {
             if (currentCell && selectedUnit.IsValidDestination(currentCell))
             {
-                grid.FindPath(selectedUnit.Location, currentCell, selectedUnit);
+                grid.ClearPath();
+                grid.FindPath(selectedUnit.Location, currentCell, selectedUnit, true);
             }
             else
             {
@@ -87,6 +88,7 @@ public class HexGameUI : MonoBehaviour
         {
             selectedUnit.Travel(grid.GetPath());
             grid.ClearPath();
+            selectedUnit.currentDestinationCell = currentCell;//задаем конечную точку
         }
     }
 }
