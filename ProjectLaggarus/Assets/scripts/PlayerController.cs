@@ -1,40 +1,27 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
-public class PlayerController : MonoBehaviour {
+public class PlayerController {
 
-    /// <summary>
-    /// Ссылка на текстовое поле для вывода текущего хода
-    /// </summary>
-    public Text currentTurnLabel;
     /// <summary>
     /// Числовое значение текущего хода
     /// </summary>
-    private int currentTurn;
-    /// <summary>
-    /// Ссылка на грид этого игрока
-    /// </summary>
-    public HexGrid grid;
+    public int currentTurn;
 
-    /// <summary>
-    /// Завершить ход(запуск процедур обсчета и всего, что необходимо)
-    /// </summary>
-    public void DoNextTurn()
+    public void DoTurn(HexGrid grid)
     {
-        currentTurn++;
-        currentTurnLabel.text = "Current Turn: " + currentTurn.ToString();
-
         //Воссанавливаем очки передвижения юнитов
         foreach (HexUnit unit in grid.units)
         {
-            DoUnitActions(unit);
+            DoUnitActions(grid, unit);
             unit.RestoreUnitSpeed();
         }
+
     }
 
-    private void DoUnitActions(HexUnit unit)
+    // TODO исправить поиск пути каждый ход для каждого юнита, либо сделать это заранее во время хода(чтобы не тратить время на обсчет ходов)
+    private void DoUnitActions(HexGrid grid, HexUnit unit)
     {
         if (unit.currentDestinationCell && unit.currentDestinationCell != unit.Location)
         {
@@ -50,5 +37,4 @@ public class PlayerController : MonoBehaviour {
             unit.currentDestinationCell = null;
         }
     }
-
 }

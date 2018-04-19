@@ -38,7 +38,7 @@ GameObject:
   - component: {fileID: 4287271991960808}
   - component: {fileID: 114853314868390106}
   m_Layer: 0
-  m_Name: Unit
+  m_Name: Unit2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -85,7 +85,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_Materials:
-  - {fileID: 2100000, guid: 235b437abe481284e92094ae60ea9866, type: 2}
+  - {fileID: 2100000, guid: 07feac4128b73a04c8d5c8187b556f34, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -123,3 +123,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 588788eec423ae641a449ac29d802a1b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  unitOwner: 0
+  currentDestinationCell: {fileID: 0}

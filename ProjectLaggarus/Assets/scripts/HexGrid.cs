@@ -17,8 +17,6 @@ public class HexGrid : MonoBehaviour {
     HexCell[] cells; //Массив ячеек (под весь грид)
 
     public Text cellLabelPrefab; //префаб текста
-    //Canvas gridCanvas; //канвас для вывода координат
-    //HexMesh hexMesh; //generic mesh (скрипт)
 
     public Texture2D noiseSource;//шум для деформации тайлов
 
@@ -29,7 +27,7 @@ public class HexGrid : MonoBehaviour {
     HexCell currentPathFrom, currentPathTo, currentPathReach;
     bool currentPathExists;//Существование пути
 
-    public HexUnit unitPrefab;
+    public HexUnit[] unitPrefabs;
     public List<HexUnit> units = new List<HexUnit>();//лист юнитов
 
     HexCellShaderData cellShaderData;//информация для шейдера
@@ -45,7 +43,7 @@ public class HexGrid : MonoBehaviour {
     {
         HexMetrics.noiseSource = noiseSource;
         HexMetrics.InitializeHashGrid(seed);
-        HexUnit.unitPrefab = unitPrefab;
+        HexUnit.unitPrefabs.AddRange(unitPrefabs);
         cellShaderData = gameObject.AddComponent<HexCellShaderData>();
         cellShaderData.Grid = this;
         CreateMap(cellCountX, cellCountZ, wrapping);
@@ -57,7 +55,7 @@ public class HexGrid : MonoBehaviour {
         {
             HexMetrics.noiseSource = noiseSource;
             HexMetrics.InitializeHashGrid(seed);
-            HexUnit.unitPrefab = unitPrefab;
+            HexUnit.unitPrefabs.AddRange(unitPrefabs);
             HexMetrics.wrapSize = wrapping ? cellCountX : 0;
             ResetVisibility();
         }
@@ -382,8 +380,16 @@ public class HexGrid : MonoBehaviour {
             chunks[i].Refresh();
         }
 
-        //загрузка юнитов (формат 2 и выше)
-        if (header >= 2)
+        //загрузка юнитов (формат шесть и выше)
+        if (header >= 6)
+        {
+            int unitCount = reader.ReadInt32();
+            for (int i = 0; i < unitCount; i++)
+            {
+                HexUnit.Load(reader, this, true);
+            }
+        }
+        else if (header < 6)//загрузка юнитов (формат ниже шестого)
         {
             int unitCount = reader.ReadInt32();
             for (int i = 0; i < unitCount; i++)
@@ -439,14 +445,12 @@ public class HexGrid : MonoBehaviour {
         searchFrontier.Enqueue(fromCell);
         while (searchFrontier.Count > 0)
         {
-            Debug.Log(toCell);
             HexCell current = searchFrontier.Dequeue();
             current.SearchPhase += 1;
 
             //выход из подпрограммы, если достигнута клетка, путь до которой нужно найти и подсветка пути
             if (current == toCell)
             {
-                Debug.Log("Успешно");
                 return true;
             }
 
@@ -488,17 +492,9 @@ public class HexGrid : MonoBehaviour {
                     neighbor.SearchPhase = searchFrontierPhase;
                     neighbor.Distance = distance;
                     neighbor.PathFrom = current;
-                    try
-                    {
-                        neighbor.SearchHeuristic = neighbor.coordinates.DistanceTo(toCell.coordinates);
-                        searchFrontier.Enqueue(neighbor);
-                    }
-                    catch (System.Exception)
-                    {
-                        Debug.Log(neighbor);
-                        Debug.Log(toCell);
-                        throw;
-                    }
+
+                    neighbor.SearchHeuristic = neighbor.coordinates.DistanceTo(toCell.coordinates);
+                    searchFrontier.Enqueue(neighbor);
                     
                 }
                 else if (distance < neighbor.Distance)
@@ -514,6 +510,7 @@ public class HexGrid : MonoBehaviour {
         return false;
     }
 
+    // TODO вынести поиск достижимой юнитом ячейки за пределы этого метода(в search или куда нибудь в другое место)
     /// <summary>
     /// Показать путь от клетки до клетки в ходах
     /// </summary>
@@ -523,7 +520,6 @@ public class HexGrid : MonoBehaviour {
         if (currentPathExists)
         {
             HexCell current = currentPathTo;
-            //currentPathReach = null;
             int previousTurn = 0;//чтобы вернуться к клетке, которой можно достигнуть
             while (current != currentPathFrom)
             {
@@ -602,12 +598,13 @@ public class HexGrid : MonoBehaviour {
     /// <param name="unit"></param>
     /// <param name="location"></param>
     /// <param name="orientation"></param>
-    public void AddUnit(HexUnit unit, HexCell location, float orientation)
+    public void AddUnit(HexUnit unit, HexCell location, float orientation, int owner)
     {
         units.Add(unit);
         unit.Grid = this;
         unit.Location = location;
         unit.Orientation = orientation;
+        unit.unitOwner = owner;
     }
 
     /// <summary>

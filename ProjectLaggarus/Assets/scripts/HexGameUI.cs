@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 public class HexGameUI : MonoBehaviour
 {
     public HexGrid grid;
+    public GameController GameController;
 
     HexCell currentCell;
     HexUnit selectedUnit;
@@ -60,10 +61,15 @@ public class HexGameUI : MonoBehaviour
     {
         grid.ClearPath();
         UpdateCurrentCell();
-        if (currentCell)
+        if (currentCell && currentCell.Unit.unitOwner == GameController.CurrentPlayerNum)
         {
             selectedUnit = currentCell.Unit;
         }
+    }
+
+    public void CancelSelection()
+    {
+        selectedUnit = null;
     }
 
     void DoPathfinding()

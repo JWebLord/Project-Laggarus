@@ -13,6 +13,7 @@ public class HexMapEditor : MonoBehaviour
     OptionalToggle riverMode, roadMode, walledMode;
 
     public HexGrid hexGrid;//глобальный грид
+    public GameController GameController; //Главный контроллер
 
     int activeWaterLevel;//Активный уровень воды
 
@@ -57,7 +58,7 @@ public class HexMapEditor : MonoBehaviour
                 }
                 else
                 {
-                    CreateUnit();
+                    CreateUnit(GameController.CurrentPlayerNum);
                 }
             }
         }
@@ -303,12 +304,12 @@ public class HexMapEditor : MonoBehaviour
         enabled = toggle;
     }
 
-    void CreateUnit()
+    void CreateUnit(int currentPlayer)
     {
         HexCell cell = GetCellUnderCursor();
         if (cell && !cell.Unit)
         {
-            hexGrid.AddUnit(Instantiate(HexUnit.unitPrefab), cell, Random.Range(0f, 360f));
+            hexGrid.AddUnit(Instantiate(HexUnit.unitPrefabs[currentPlayer]), cell, Random.Range(0f, 360f), currentPlayer);
         }
     }
 

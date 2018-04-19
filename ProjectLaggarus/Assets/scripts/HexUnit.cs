@@ -4,11 +4,14 @@ using System.Collections.Generic;
 using System.Collections;
 using System;
 
+
+
 public class HexUnit : MonoBehaviour
 {
     private HexCell location, currentTravelLocation; //расположение в истинное и во време анимации
     private  float orientation;//направление юнита
-    public static HexUnit unitPrefab;//префаб юнита
+    public static List<HexUnit> unitPrefabs = new List<HexUnit>();//префаб юнита
+    public int unitOwner;
     List<HexCell> pathToTravel;//Путь юнита
 
     const float travelSpeed = 4f;//Скорость анимации движения юнита
@@ -25,8 +28,6 @@ public class HexUnit : MonoBehaviour
     /// Кол-во очков, которое должно быть у юнита в начале следующего хода
     /// </summary>
     public const int unitSpeedPerTurn = 24;
-
-    
 
     /// <summary>
     /// Дальность видимости юнита
@@ -123,14 +124,16 @@ public class HexUnit : MonoBehaviour
     {
         location.coordinates.Save(writer);
         writer.Write(orientation);
+        writer.Write(unitOwner);
     }
 
-    public static void Load(BinaryReader reader, HexGrid grid)
+    public static void Load(BinaryReader reader, HexGrid grid, bool ownerCompatibility = false)
     {
         HexCoordinates coordinates = HexCoordinates.Load(reader);
         float orientation = reader.ReadSingle();
+        int owner =  ownerCompatibility ? reader.ReadInt32() : 0;
         grid.AddUnit(
-            Instantiate(unitPrefab), grid.GetCell(coordinates), orientation
+            Instantiate(unitPrefabs[owner]), grid.GetCell(coordinates), orientation, owner
         );
 
     }
