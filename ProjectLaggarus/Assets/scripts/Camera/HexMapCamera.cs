@@ -17,11 +17,18 @@ public class HexMapCamera : MonoBehaviour
 
     Transform swivel, stick;
 
+    bool validate;
+
     void Awake()
     {
-        instance = this;
         swivel = transform.GetChild(0);
         stick = swivel.GetChild(0);
+    }
+
+    void OnEnable()
+    {
+        instance = this;
+        validate = true;
     }
 
     void Update()
@@ -44,6 +51,8 @@ public class HexMapCamera : MonoBehaviour
         {
             AdjustPosition(xDelta, zDelta);
         }
+        //костыль для начальной валидации позиции и не только
+        if(validate) { ValidatePosition(); }
     }
 
     void AdjustZoom(float delta)
@@ -81,17 +90,41 @@ public class HexMapCamera : MonoBehaviour
 
         Vector3 position = transform.localPosition;
         position += direction * distance;
-        transform.localPosition = ClampPosition(position);
+        transform.localPosition = grid.wrapping ? WrapPosition(position) : ClampPosition(position);
     }
 
     Vector3 ClampPosition(Vector3 position)//ограничивает перемещение камеры размерами карты
     {
-        float xMax = (grid.cellCountX - 0.5f) * (2f * HexMetrics.innerRadius);
+        float xMax = (grid.cellCountX - 0.5f) * HexMetrics.innerDiameter;
         position.x = Mathf.Clamp(position.x, 0f, xMax);
 
         float zMax = (grid.cellCountZ - 1) * (1.5f * HexMetrics.outerRadius);
         position.z = Mathf.Clamp(position.z, 0f, zMax);
 
+        return position;
+    }
+
+    /// <summary>
+    /// Позиция при склеивании карты
+    /// </summary>
+    /// <param name="position"></param>
+    /// <returns></returns>
+    Vector3 WrapPosition(Vector3 position)
+    {
+        float width = grid.cellCountX * HexMetrics.innerDiameter;
+        while (position.x < 0f)
+        {
+            position.x += width;
+        }
+        while (position.x > width)
+        {
+            position.x -= width;
+        }
+
+        float zMax = (grid.cellCountZ - 1) * (1.5f * HexMetrics.outerRadius);
+        position.z = Mathf.Clamp(position.z, 0f, zMax);
+
+        grid.CenterMap(position.x);
         return position;
     }
 

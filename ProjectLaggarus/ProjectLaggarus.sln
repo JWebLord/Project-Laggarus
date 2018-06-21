@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2017
+# Visual Studio 15
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectLaggarus", "ProjectLaggarus.csproj", "{36A326C0-D046-B9A9-BC16-E7721BF73245}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProjectLaggarus.Editor", "ProjectLaggarus.Editor.csproj", "{30E83BA2-C710-BC4A-04D7-DD0F35A301EC}"

@@ -682,9 +682,9 @@ MonoBehaviour:
     - {fileID: 4261959524988296, guid: db6e05b016629944a9515f78c17ba264, type: 2}
   - prefabs:
     - {fileID: 4074278864992684, guid: 9fc3b9d571c5c7f4e8c2c005a9bf524c, type: 2}
-    - {fileID: 4074278864992684, guid: 9fc3b9d571c5c7f4e8c2c005a9bf524c, type: 2}
+    - {fileID: 4675538557951464, guid: 40de43296ee87d142b21ba39920f1223, type: 2}
   - prefabs:
-    - {fileID: 4825803100863290, guid: f47a18efa1bbca641a4ffbb36b437275, type: 2}
+    - {fileID: 4435980597544404, guid: f47a18efa1bbca641a4ffbb36b437275, type: 2}
     - {fileID: 4013139730930336, guid: 62c80969e036b5342ae68554279fa4b6, type: 2}
   farmCollections:
   - prefabs:

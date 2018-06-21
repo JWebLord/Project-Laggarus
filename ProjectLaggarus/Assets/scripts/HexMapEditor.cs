@@ -13,16 +13,17 @@ public class HexMapEditor : MonoBehaviour
     OptionalToggle riverMode, roadMode, walledMode;
 
     public HexGrid hexGrid;//глобальный грид
+    public GameController GameController; //Главный контроллер
 
     int activeWaterLevel;//Активный уровень воды
 
     public Material terrainMaterial;//ссылка на материал поверхности
 
-    bool applyElevation = true;//редактировать ли высоту
-    bool applyWaterLevel = true;//редактировать ли уровень высоты
+    bool applyElevation = false;//редактировать ли высоту
+    bool applyWaterLevel = false;//редактировать ли уровень высоты
     bool applyUrbanLevel, applyFarmLevel, applyPlantLevel, applySpecialIndex;//редактировать ли застройку, фермы, мегаструктуры и леса
 
-    int activeTerrainTypeIndex;//индекс типа поверхности клетки
+    int activeTerrainTypeIndex = -1;//индекс типа поверхности клетки
 
     private int activeElevation;//активная высота
     private int activeUrbanLevel, activeFarmLevel, activePlantLevel, activeSpecialIndex;//активный уровень застройки, ферм, мегаструктур и лесов
@@ -36,7 +37,8 @@ public class HexMapEditor : MonoBehaviour
     void Awake()
     {
         terrainMaterial.DisableKeyword("GRID_ON");
-        SetEditMode(false);
+        Shader.EnableKeyword("HEX_MAP_EDIT_MODE");
+        SetEditMode(true);
     }
 
     void Update()
@@ -56,7 +58,7 @@ public class HexMapEditor : MonoBehaviour
                 }
                 else
                 {
-                    CreateUnit();
+                    CreateUnit(GameController.CurrentPlayerNum);
                 }
             }
         }
@@ -302,12 +304,12 @@ public class HexMapEditor : MonoBehaviour
         enabled = toggle;
     }
 
-    void CreateUnit()
+    void CreateUnit(int currentPlayer)
     {
         HexCell cell = GetCellUnderCursor();
         if (cell && !cell.Unit)
         {
-            hexGrid.AddUnit(Instantiate(HexUnit.unitPrefab), cell, Random.Range(0f, 360f));
+            hexGrid.AddUnit(Instantiate(HexUnit.unitPrefabs[currentPlayer]), cell, Random.Range(0f, 360f), currentPlayer);
         }
     }
 

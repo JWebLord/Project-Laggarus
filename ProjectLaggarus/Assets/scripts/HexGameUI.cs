@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 public class HexGameUI : MonoBehaviour
 {
     public HexGrid grid;
+    public GameController GameController;
 
     HexCell currentCell;
     HexUnit selectedUnit;
@@ -18,11 +19,11 @@ public class HexGameUI : MonoBehaviour
             }
             else if (selectedUnit)
             {
-                if (Input.GetMouseButtonDown(1))
+                if (Input.GetMouseButtonUp(1))
                 {
                     DoMove();
                 }
-                else
+                else if (Input.GetMouseButton(1))
                 {
                     DoPathfinding();
                 }
@@ -35,6 +36,14 @@ public class HexGameUI : MonoBehaviour
         enabled = !toggle;
         grid.ShowUI(!toggle);
         grid.ClearPath();
+        if (toggle)
+        {
+            Shader.EnableKeyword("HEX_MAP_EDIT_MODE");
+        }
+        else
+        {
+            Shader.DisableKeyword("HEX_MAP_EDIT_MODE");
+        }
     }
 
     bool UpdateCurrentCell()
@@ -52,10 +61,15 @@ public class HexGameUI : MonoBehaviour
     {
         grid.ClearPath();
         UpdateCurrentCell();
-        if (currentCell)
+        if (currentCell && currentCell.Unit.unitOwner == GameController.CurrentPlayerNum)
         {
             selectedUnit = currentCell.Unit;
         }
+    }
+
+    public void CancelSelection()
+    {
+        selectedUnit = null;
     }
 
     void DoPathfinding()
@@ -64,7 +78,8 @@ public class HexGameUI : MonoBehaviour
         {
             if (currentCell && selectedUnit.IsValidDestination(currentCell))
             {
-                grid.FindPath(selectedUnit.Location, currentCell, 24);
+                grid.ClearPath();
+                grid.FindPath(selectedUnit.Location, currentCell, selectedUnit, true);
             }
             else
             {
@@ -79,6 +94,7 @@ public class HexGameUI : MonoBehaviour
         {
             selectedUnit.Travel(grid.GetPath());
             grid.ClearPath();
+            selectedUnit.currentDestinationCell = currentCell;//задаем конечную точку
         }
     }
 }

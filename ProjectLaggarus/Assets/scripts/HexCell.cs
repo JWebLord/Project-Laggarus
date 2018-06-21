@@ -32,12 +32,31 @@ public class HexCell : MonoBehaviour {
     public int Index { get; set; }//индекс ячейки для типа поверхности
 
     int visibility;//видна ли ячейка
+    bool explored; //исследована ли ячейка(переменная)
+    public bool Explorable { get; set; }//возможно ли вообще исследовать ячейку(для краев карты(по крайней мере сделана для этого))
+
+    public int ColumnIndex { get; set; }//Индекс столбца чанков
+
+    /// <summary>
+    /// исследована ли ячейка(св-во)
+    /// </summary>
+    public bool IsExplored
+    {
+        get
+        {
+            return explored && Explorable;
+        }
+        private set
+        {
+            explored = value;
+        }
+    }
 
     public bool IsVisible
     {
         get
         {
-            return visibility > 0;
+            return visibility > 0 && Explorable;
         }
     }
 
@@ -46,6 +65,7 @@ public class HexCell : MonoBehaviour {
         visibility += 1;
         if (visibility == 1)
         {
+            IsExplored = true;
             ShaderData.RefreshVisibility(this);
         }
     }
@@ -56,6 +76,14 @@ public class HexCell : MonoBehaviour {
         if (visibility == 0)
         {
             ShaderData.RefreshVisibility(this);
+        }
+    }
+
+    public int ViewElevation
+    {
+        get
+        {
+            return elevation >= waterLevel ? elevation : waterLevel;
         }
     }
 
@@ -124,8 +152,15 @@ public class HexCell : MonoBehaviour {
             {
                 return;
             }
+            //изменяем дальность видимости юнитов при изменении высоты ячейки
+            int originalViewElevation = ViewElevation;
 
             elevation = value;
+
+            if (ViewElevation != originalViewElevation)
+            {
+                ShaderData.ViewElevationChanged();
+            }
             RefreshPosition();//обновить позиционирование клетки по высоте
             //проверки на то, чтобы реки текли правильно(по высотам)
             ValidateRivers();
@@ -269,7 +304,14 @@ public class HexCell : MonoBehaviour {
             {
                 return;
             }
+            int originalViewElevation = ViewElevation;
+
             waterLevel = value;
+
+            if (ViewElevation != originalViewElevation)
+            {
+                ShaderData.ViewElevationChanged();
+            }
             ValidateRivers();
             Refresh();
         }
@@ -609,14 +651,14 @@ public class HexCell : MonoBehaviour {
     }
 
     /// <summary>
-    /// Закрузка клетки
+    /// Закрузка ячейки
     /// </summary>
     /// <param name="writer"></param>
     public void Save(BinaryWriter writer)
     {
         //некоторые пишутся в байт, т.к. диапазон небольшой
         writer.Write((byte)terrainTypeIndex);
-        writer.Write((byte)elevation);
+        writer.Write((byte)(elevation + 127));
         writer.Write((byte)waterLevel);
         writer.Write((byte)urbanLevel);
         writer.Write((byte)farmLevel);
@@ -652,18 +694,24 @@ public class HexCell : MonoBehaviour {
             }
         }
         writer.Write((byte)roadFlags);
+
+        writer.Write(IsExplored);
     }
 
     /// <summary>
-    /// Сохранение клетки
+    /// Загрузка ячейки
     /// </summary>
     /// <param name="reader"></param>
-    public void Load(BinaryReader reader)
+    public void Load(BinaryReader reader, int header)
     {
         //кодирование см. в Save
         terrainTypeIndex = reader.ReadByte();
         ShaderData.RefreshTerrain(this);
         elevation = reader.ReadByte();
+        if (header >= 4)
+        {
+            elevation -= 127;
+        }
         RefreshPosition();
         waterLevel = reader.ReadByte();
         urbanLevel = reader.ReadByte();
@@ -699,7 +747,11 @@ public class HexCell : MonoBehaviour {
         {
             roads[i] = (roadFlags & (1 << i)) != 0;
         }
+
+        IsExplored = header >= 3 ? reader.ReadBoolean() : false;
+        ShaderData.RefreshVisibility(this);
     }
+
     /// <summary>
     /// Установить текст на клетке
     /// </summary>
@@ -740,6 +792,27 @@ public class HexCell : MonoBehaviour {
         {
             return distance + SearchHeuristic;
         }
+    }
+
+    /// <summary>
+    /// Сбросить видимость на ячейке
+    /// </summary>
+    public void ResetVisibility()
+    {
+        if (visibility > 0)
+        {
+            visibility = 0;
+            ShaderData.RefreshVisibility(this);
+        }
+    }
+
+    /// <summary>
+    /// Установить данные карты для "сырого" отображения карты через шейдер
+    /// </summary>
+    /// <param name="data"></param>
+    public void SetMapData(float data)
+    {
+        ShaderData.SetMapData(this, data);
     }
 
 }
